@@ -1,0 +1,164 @@
+'use client';
+
+import { useRef } from 'react';
+import { Download, Upload, Volume2 } from 'lucide-react';
+import { useStore } from '@/lib/store';
+import { useHydrated } from '@/lib/hooks';
+import { countdownDone, unlockAudio } from '@/lib/cues';
+import { BottomNav, Stepper, Toggle } from '@/components/ui';
+import type { WorkoutSessionLog } from '@/lib/types';
+
+export default function SettingsPage() {
+  const hydrated = useHydrated();
+  const { settings, updateSettings, history, importHistory } = useStore();
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  if (!hydrated) return <div className="min-h-dvh" />;
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chest-run-history-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const onImport = async (file: File) => {
+    try {
+      const data = JSON.parse(await file.text()) as WorkoutSessionLog[];
+      if (!Array.isArray(data) || data.some((d) => !d.id || !d.date || !d.workoutType)) throw new Error('bad file');
+      importHistory(data);
+      alert(`Imported ${data.length} sessions.`);
+    } catch {
+      alert('That file is not a valid history export.');
+    }
+  };
+
+  return (
+    <main className="space-y-6 px-4 pt-6 pb-28">
+      <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Rest timer</h2>
+        <Row label="Routine rest" hint="60s on superset 1, 45s on superset 2">
+          <Toggle
+            label="Routine rest"
+            checked={settings.useRoutineRest}
+            onChange={(v) => updateSettings({ useRoutineRest: v })}
+          />
+        </Row>
+        {!settings.useRoutineRest && (
+          <>
+            <div className="grid grid-cols-3 gap-2">
+              {[45, 60, 90].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => updateSettings({ restSeconds: s })}
+                  className={`rounded-2xl py-4 text-lg font-bold ${
+                    settings.restSeconds === s ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-300'
+                  }`}
+                >
+                  {s}s
+                </button>
+              ))}
+            </div>
+            <Stepper
+              label="Custom rest"
+              value={settings.restSeconds}
+              onChange={(v) => updateSettings({ restSeconds: Math.max(10, v) })}
+              step={5}
+              min={10}
+              unit="s"
+            />
+          </>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cues</h2>
+        <Row label="Sound" hint="Beeps at 3, 2, 1 and 0">
+          <Toggle label="Sound" checked={settings.soundEnabled} onChange={(v) => updateSettings({ soundEnabled: v })} />
+        </Row>
+        <Row label="Vibration" hint="Not supported on iPhone Safari">
+          <Toggle
+            label="Vibration"
+            checked={settings.vibrationEnabled}
+            onChange={(v) => updateSettings({ vibrationEnabled: v })}
+          />
+        </Row>
+        <button
+          type="button"
+          onClick={() => {
+            unlockAudio();
+            countdownDone();
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-300"
+        >
+          <Volume2 className="size-5" /> Test cue
+        </button>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Goal</h2>
+        <Stepper
+          label="Sessions per week"
+          value={settings.weeklyTarget}
+          onChange={(v) => updateSettings({ weeklyTarget: Math.max(1, Math.round(v)) })}
+          min={1}
+        />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Data</h2>
+        <p className="text-sm text-zinc-500">
+          History lives only in this browser ({history.length} sessions). Export a backup before clearing site data or
+          switching phones.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={exportData}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-300"
+          >
+            <Download className="size-5" /> Export
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInput.current?.click()}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-300"
+          >
+            <Upload className="size-5" /> Import
+          </button>
+        </div>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void onImport(file);
+            e.target.value = '';
+          }}
+        />
+      </section>
+
+      <BottomNav />
+    </main>
+  );
+}
+
+function Row({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl bg-zinc-900 p-4">
+      <div>
+        <div className="font-medium">{label}</div>
+        <div className="text-xs text-zinc-500">{hint}</div>
+      </div>
+      {children}
+    </div>
+  );
+}
