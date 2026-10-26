@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Chest & Run Companion',
-  description: 'Home chest workouts A/B with a guided 20-minute post-lift run.',
+  description: 'Home chest workouts A/B with a guided 20-minute post-lift run or Peloton ride.',
   appleWebApp: { capable: true, title: 'Chest & Run', statusBarStyle: 'black-translucent' },
 };
 

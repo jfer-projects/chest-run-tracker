@@ -6,6 +6,8 @@ import { useStore } from '@/lib/store';
 import { useHydrated } from '@/lib/hooks';
 import { countdownDone, unlockAudio } from '@/lib/cues';
 import { BottomNav, Stepper, Toggle } from '@/components/ui';
+import { CardioIcon } from '@/components/RunTimer';
+import { CARDIO_LABEL } from '@/lib/run';
 import type { WorkoutSessionLog } from '@/lib/types';
 
 export default function SettingsPage() {
@@ -99,6 +101,25 @@ export default function SettingsPage() {
         >
           <Volume2 className="size-5" /> Test cue
         </button>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cardio</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {(['run', 'bike'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => updateSettings({ defaultCardio: m })}
+              className={`flex items-center justify-center gap-2 rounded-2xl py-4 font-bold ${
+                settings.defaultCardio === m ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-300'
+              }`}
+            >
+              <CardioIcon mode={m} className="size-5" /> {CARDIO_LABEL[m].title}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-zinc-500">Offered first after strength. You can still pick the other one each session.</p>
       </section>
 
       <section className="space-y-3">

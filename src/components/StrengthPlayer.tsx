@@ -132,11 +132,11 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
         <button
           type="button"
           onClick={() => {
-            if (confirm('Skip the rest of the strength work and go to the run?')) skipStrength();
+            if (confirm('Skip the rest of the strength work and go to cardio?')) skipStrength();
           }}
           className="w-full py-1 text-xs text-zinc-600"
         >
-          Skip to run
+          Skip to cardio
         </button>
       </div>
 

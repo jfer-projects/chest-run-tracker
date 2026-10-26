@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Footprints, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
+import { CARDIO_LABEL } from '@/lib/run';
+import { CardioIcon } from './RunTimer';
 import { useStore, type ActiveSession } from '@/lib/store';
 import { WORKOUTS } from '@/lib/workouts';
 import { sessionTotals } from '@/lib/stats';
@@ -13,6 +15,7 @@ export function SummaryModal({ session }: { session: ActiveSession }) {
   const { saveSession, discardSession } = useStore();
   const [notes, setNotes] = useState('');
   const totals = sessionTotals(session);
+  const cardio = session.run.mode ?? 'run';
   const duration = Math.round(((session.endedAt ?? Date.now()) - session.startedAt) / 1000);
 
   const stats = [
@@ -48,8 +51,12 @@ export function SummaryModal({ session }: { session: ActiveSession }) {
           session.run.completed ? 'bg-sky-500/10 text-sky-300' : 'bg-zinc-900 text-zinc-500'
         }`}
       >
-        <Footprints className="size-5" />
-        {session.run.completed ? '20-minute run completed' : 'Run not completed'}
+        <CardioIcon mode={cardio} className="size-5" />
+        {!session.run.started
+          ? 'Cardio skipped'
+          : session.run.completed
+            ? `20-minute ${CARDIO_LABEL[cardio].noun} completed`
+            : `${CARDIO_LABEL[cardio].title} not completed`}
       </div>
 
       <label className="mt-5 block text-sm font-medium text-zinc-300" htmlFor="notes">

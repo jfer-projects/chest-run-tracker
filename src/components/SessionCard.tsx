@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Footprints, Trash2 } from 'lucide-react';
+import { ChevronDown, Trash2 } from 'lucide-react';
+import { CardioIcon } from './RunTimer';
 import type { ExerciseId, WorkoutSessionLog } from '@/lib/types';
 import { EXERCISES, WORKOUTS } from '@/lib/workouts';
 import { formatDate, formatDuration, formatTime } from '@/lib/format';
@@ -44,7 +45,8 @@ export function SessionCard({
         </div>
         {log.runCompleted && (
           <span className="flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-1 text-xs font-semibold text-sky-400">
-            <Footprints className="size-3.5" /> Run
+            <CardioIcon mode={log.cardioMode ?? 'run'} className="size-3.5" />
+            {log.cardioMode === 'bike' ? 'Ride' : 'Run'}
           </span>
         )}
         {expandable && <ChevronDown className={`size-5 text-zinc-500 transition-transform ${open ? 'rotate-180' : ''}`} />}

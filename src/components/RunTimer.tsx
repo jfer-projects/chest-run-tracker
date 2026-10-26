@@ -1,24 +1,36 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Footprints, Pause, Play, SkipForward, Square } from 'lucide-react';
+import { Bike, Footprints, Pause, Play, SkipForward, Square } from 'lucide-react';
 import { useStore, runElapsedSec, type ActiveSession } from '@/lib/store';
 import { useNow } from '@/lib/hooks';
-import { RUN_PHASES, RUN_TOTAL_SEC, phaseIndexAt } from '@/lib/run';
+import { CARDIO_LABEL, RUN_PHASES, RUN_TOTAL_SEC, phaseIndexAt } from '@/lib/run';
+import type { CardioMode } from '@/lib/types';
 import { countdownTick, phaseChange, sessionComplete, unlockAudio } from '@/lib/cues';
 import { formatClock } from '@/lib/format';
 import { ProgressRing } from './ui';
 
+export function CardioIcon({ mode, className }: { mode: CardioMode; className?: string }) {
+  return mode === 'bike' ? <Bike className={className} /> : <Footprints className={className} />;
+}
+
 export function RunOffer({ session }: { session: ActiveSession }) {
-  const { startRun, finishRun } = useStore();
+  const { startRun, finishRun, settings } = useStore();
   const logged = Object.values(session.sets).reduce((n, s) => n + (s?.filter(Boolean).length ?? 0), 0);
+  // The last-used cardio is the big primary button; the other sits beside it.
+  const preferred = settings.defaultCardio;
+  const other: CardioMode = preferred === 'run' ? 'bike' : 'run';
+  const start = (mode: CardioMode) => {
+    unlockAudio();
+    startRun(mode);
+  };
   return (
     <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center px-6 text-center">
       <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-emerald-500/15">
-        <Footprints className="size-10 text-emerald-400" />
+        <CardioIcon mode={preferred} className="size-10 text-emerald-400" />
       </div>
       <h2 className="text-3xl font-bold">Strength done</h2>
-      <p className="mt-2 text-zinc-400">{logged} sets logged. Lace up for the 20-minute run.</p>
+      <p className="mt-2 text-zinc-400">{logged} sets logged. Time for 20 minutes of cardio: run or Peloton.</p>
       <div className="mt-8 w-full space-y-2 text-left">
         {RUN_PHASES.map((p) => (
           <div key={p.id} className="flex items-center gap-3 rounded-xl bg-zinc-900 px-4 py-3">
@@ -30,16 +42,20 @@ export function RunOffer({ session }: { session: ActiveSession }) {
       </div>
       <button
         type="button"
-        onClick={() => {
-          unlockAudio();
-          startRun();
-        }}
+        onClick={() => start(preferred)}
         className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-5 text-xl font-bold text-zinc-950 active:bg-emerald-400"
       >
-        <Play className="size-6 fill-current" /> Start Run
+        <CardioIcon mode={preferred} className="size-6" /> Start {CARDIO_LABEL[preferred].title}
+      </button>
+      <button
+        type="button"
+        onClick={() => start(other)}
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-700 py-4 text-lg font-semibold text-zinc-200 active:bg-zinc-900"
+      >
+        <CardioIcon mode={other} className="size-5" /> {CARDIO_LABEL[other].title} instead
       </button>
       <button type="button" onClick={() => finishRun(false)} className="mt-3 w-full py-3 text-zinc-500">
-        Skip run &amp; finish
+        Skip cardio &amp; finish
       </button>
     </div>
   );
@@ -48,6 +64,7 @@ export function RunOffer({ session }: { session: ActiveSession }) {
 export function RunTimer({ session }: { session: ActiveSession }) {
   const { pauseRun, resumeRun, skipRunPhase, finishRun } = useStore();
   const running = session.run.resumedAt !== null;
+  const mode = session.run.mode ?? 'run';
   const now = useNow(running, 200);
   const elapsed = runElapsedSec(session.run, now);
   const idx = phaseIndexAt(elapsed);
@@ -108,7 +125,7 @@ export function RunTimer({ session }: { session: ActiveSession }) {
         >
           {phase.label}
         </span>
-        <p className="mt-3 max-w-xs text-xl font-semibold text-zinc-100">{phase.cue}</p>
+        <p className="mt-3 max-w-xs text-xl font-semibold text-zinc-100">{mode === 'bike' ? phase.bikeCue : phase.cue}</p>
 
         <div className="my-8">
           <ProgressRing
@@ -135,7 +152,7 @@ export function RunTimer({ session }: { session: ActiveSession }) {
         <button
           type="button"
           onClick={() => {
-            if (confirm('End the run now? It will be logged as not completed.')) finishRun(false);
+            if (confirm(`End the ${CARDIO_LABEL[mode].noun} now? It will be logged as not completed.`)) finishRun(false);
           }}
           className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-zinc-900 py-4 text-sm text-zinc-400"
         >

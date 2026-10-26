@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ExerciseId, Settings, SetLog, WorkoutSessionLog, WorkoutType } from './types';
+import type { CardioMode, ExerciseId, Settings, SetLog, WorkoutSessionLog, WorkoutType } from './types';
 import { EXERCISES, buildSteps } from './workouts';
 import { RUN_PHASES, RUN_TOTAL_SEC, phaseIndexAt } from './run';
 
@@ -13,6 +13,8 @@ export interface RunState {
   resumedAt: number | null; // epoch ms when last resumed, null when paused
   started: boolean;
   completed: boolean;
+  /** Run or Peloton ride. Missing on sessions saved before rides existed, which means run. */
+  mode?: CardioMode;
 }
 
 export interface ActiveSession {
@@ -40,7 +42,7 @@ interface StoreState {
   addRest: (seconds: number) => void;
   endRest: () => void;
   skipStrength: () => void;
-  startRun: () => void;
+  startRun: (mode: CardioMode) => void;
   pauseRun: () => void;
   resumeRun: () => void;
   skipRunPhase: () => void;
@@ -68,7 +70,7 @@ export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       history: [],
-      settings: { useRoutineRest: true, restSeconds: 60, soundEnabled: true, vibrationEnabled: true, weeklyTarget: 3 },
+      settings: { useRoutineRest: true, restSeconds: 60, soundEnabled: true, vibrationEnabled: true, weeklyTarget: 3, defaultCardio: 'run' },
       lastWeights: {},
       lastReps: {},
       active: null,
@@ -142,11 +144,12 @@ export const useStore = create<StoreState>()(
         set({ active: { ...active, phase: 'run-offer', restEndsAt: null } });
       },
 
-      startRun: () => {
-        const { active } = get();
+      startRun: (mode) => {
+        const { active, settings } = get();
         if (!active) return;
         set({
-          active: { ...active, phase: 'run', run: { ...freshRun(), started: true, resumedAt: Date.now() } },
+          settings: { ...settings, defaultCardio: mode },
+          active: { ...active, phase: 'run', run: { ...freshRun(), mode, started: true, resumedAt: Date.now() } },
         });
       },
 
@@ -208,6 +211,7 @@ export const useStore = create<StoreState>()(
           workoutType: active.workoutType,
           sets: active.sets,
           runCompleted: active.run.completed,
+          cardioMode: active.run.started ? (active.run.mode ?? 'run') : undefined,
           notes: notes?.trim() || undefined,
           durationSeconds: Math.round((endedAt - active.startedAt) / 1000),
         };

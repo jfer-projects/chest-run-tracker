@@ -80,10 +80,15 @@ export interface WorkoutSessionLog {
   date: string; // ISO String
   workoutType: WorkoutType;
   sets: Partial<Record<ExerciseId, SetLog[]>>;
+  /** True when the 20-minute cardio block was completed (run or ride; name kept for saved data). */
   runCompleted: boolean;
+  /** Which cardio was done. Missing on older logs, which were all runs. */
+  cardioMode?: CardioMode;
   notes?: string;
   durationSeconds: number;
 }
+
+export type CardioMode = 'run' | 'bike';
 
 export type RunPhaseId = 'warmup' | 'zone2' | 'push' | 'cooldown';
 
@@ -91,6 +96,8 @@ export interface RunPhase {
   id: RunPhaseId;
   label: string;
   cue: string;
+  /** Peloton / indoor bike version of the cue. */
+  bikeCue: string;
   startSec: number;
   endSec: number;
   color: string; // hex, used for rings/bars
@@ -103,4 +110,6 @@ export interface Settings {
   soundEnabled: boolean;
   vibrationEnabled: boolean;
   weeklyTarget: number;
+  /** Cardio offered first after strength; updates to whatever was last chosen. */
+  defaultCardio: CardioMode;
 }

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, Dumbbell, Flame, Footprints, Play, RotateCcw } from 'lucide-react';
+import { ChevronRight, Dumbbell, Flame, Play, RotateCcw } from 'lucide-react';
+import { CardioIcon } from '@/components/RunTimer';
 import { useStore, nextWorkoutType } from '@/lib/store';
 import { useHydrated } from '@/lib/hooks';
 import { EXERCISES, WORKOUTS } from '@/lib/workouts';
@@ -88,7 +89,7 @@ export default function Dashboard() {
               <Dumbbell className="size-3.5" /> ~25 min strength
             </span>
             <span className="flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-zinc-300">
-              <Footprints className="size-3.5" /> 20 min run
+              <CardioIcon mode={settings.defaultCardio} className="size-3.5" /> 20 min run or ride
             </span>
           </div>
         </div>
