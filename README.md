@@ -19,7 +19,7 @@ Open http://localhost:3000. To test on your phone, run `npm run dev -- -H 0.0.0.
 - **History**: 8-week bar chart, date-range and A/B filters, per-set reps and weights.
 - **Settings**: rest mode, sound/vibration, weekly target, JSON export/import.
 
-Everything is stored in `localStorage` (no account). Timers use timestamps, so they stay accurate across refreshes and background tabs, and the screen is kept awake during workouts where the browser supports it.
+Everything is stored in `localStorage` first, so the app works offline. Signing in (Settings → Cloud backup, using a MealApp account) syncs history and settings to the MealApp Supabase project's `chestrun_sessions` / `chestrun_settings` tables, which are row-level-secured per user. Sync runs on sign-in, after each change, when the app regains focus, and when the device comes back online. Deletions sync as tombstones so they don't reappear from another device. Timers use timestamps, so they stay accurate across refreshes and background tabs, and the screen is kept awake during workouts where the browser supports it.
 
 ## Structure
 

@@ -7,6 +7,7 @@ import { useHydrated } from '@/lib/hooks';
 import { countdownDone, unlockAudio } from '@/lib/cues';
 import { BottomNav, Stepper, Toggle } from '@/components/ui';
 import { CardioIcon } from '@/components/RunTimer';
+import { CloudBackup } from '@/components/CloudBackup';
 import { CARDIO_LABEL } from '@/lib/run';
 import type { WorkoutSessionLog } from '@/lib/types';
 
@@ -41,6 +42,11 @@ export default function SettingsPage() {
   return (
     <main className="space-y-6 px-4 pt-6 pb-28">
       <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cloud backup</h2>
+        <CloudBackup />
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Rest timer</h2>
@@ -135,8 +141,8 @@ export default function SettingsPage() {
       <section className="space-y-3">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Data</h2>
         <p className="text-sm text-zinc-500">
-          History lives only in this browser ({history.length} sessions). Export a backup before clearing site data or
-          switching phones.
+          {history.length} sessions on this device. Cloud backup above keeps them safe; a JSON export is an extra copy you
+          keep yourself.
         </p>
         <div className="grid grid-cols-2 gap-2">
           <button

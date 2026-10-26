@@ -35,6 +35,10 @@ interface StoreState {
   lastWeights: Partial<Record<ExerciseId, number>>;
   lastReps: Partial<Record<ExerciseId, number>>;
   active: ActiveSession | null;
+  /** Session ids deleted locally that the cloud hasn't been told about yet. */
+  pendingDeletes: string[];
+  /** When settings last changed on this device, for last-write-wins cloud sync. 0 = never. */
+  settingsUpdatedAt: number;
 
   startSession: (type: WorkoutType) => void;
   completeSet: (reps: number, weightLbs?: number) => void;
@@ -74,6 +78,8 @@ export const useStore = create<StoreState>()(
       lastWeights: {},
       lastReps: {},
       active: null,
+      pendingDeletes: [],
+      settingsUpdatedAt: 0,
 
       startSession: (type) =>
         set({
@@ -149,6 +155,7 @@ export const useStore = create<StoreState>()(
         if (!active) return;
         set({
           settings: { ...settings, defaultCardio: mode },
+          settingsUpdatedAt: Date.now(),
           active: { ...active, phase: 'run', run: { ...freshRun(), mode, started: true, resumedAt: Date.now() } },
         });
       },
@@ -220,9 +227,13 @@ export const useStore = create<StoreState>()(
 
       discardSession: () => set({ active: null }),
 
-      deleteLog: (id) => set({ history: get().history.filter((h) => h.id !== id) }),
+      deleteLog: (id) =>
+        set({
+          history: get().history.filter((h) => h.id !== id),
+          pendingDeletes: [...get().pendingDeletes, id],
+        }),
 
-      updateSettings: (patch) => set({ settings: { ...get().settings, ...patch } }),
+      updateSettings: (patch) => set({ settings: { ...get().settings, ...patch }, settingsUpdatedAt: Date.now() }),
 
       importHistory: (logs) => {
         const byId = new Map(get().history.map((h) => [h.id, h]));

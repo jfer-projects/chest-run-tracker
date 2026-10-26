@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, Dumbbell, Flame, Play, RotateCcw } from 'lucide-react';
+import { ChevronRight, CloudOff, Dumbbell, Flame, Play, RotateCcw } from 'lucide-react';
+import { useSyncStatus } from '@/lib/sync';
 import { CardioIcon } from '@/components/RunTimer';
 import { useStore, nextWorkoutType } from '@/lib/store';
 import { useHydrated } from '@/lib/hooks';
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const hydrated = useHydrated();
   const router = useRouter();
   const { history, settings, active, startSession } = useStore();
+  const sync = useSyncStatus((s) => s.state);
 
   if (!hydrated) return <div className="min-h-dvh" />;
 
@@ -45,6 +47,17 @@ export default function Dashboard() {
           {streak} wk streak
         </div>
       </header>
+
+      {sync === 'signed-out' && (
+        <Link
+          href="/settings"
+          className="mb-4 flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm"
+        >
+          <CloudOff className="size-5 shrink-0 text-amber-400" />
+          <span className="flex-1 text-zinc-300">Back up your history &amp; streak: sign in</span>
+          <ChevronRight className="size-4 text-zinc-500" />
+        </Link>
+      )}
 
       {active && (
         <Link

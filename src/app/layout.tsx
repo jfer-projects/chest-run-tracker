@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { SyncBoot } from '@/components/SyncBoot';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-dvh antialiased`}>
+        <SyncBoot />
         <div className="mx-auto min-h-dvh max-w-md">{children}</div>
       </body>
     </html>
