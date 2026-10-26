@@ -106,7 +106,11 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
       'Press up and slightly toward your hips; squeeze glutes, ribs down',
     ],
     anatomicalTip: 'The bridge angle mimics a decline bench press to emphasize the costal fibers.',
-    media: { frames: frames('Floor_Press'), badge: 'Decline Angle' },
+    // No library photo shows the bridge + DB press combo, so this uses a bundled illustration.
+    media: {
+      frames: ['/demos/glute-bridge-floor-press-0.svg', '/demos/glute-bridge-floor-press-1.svg'],
+      badge: 'Decline Angle',
+    },
   },
   'bent-over-db-row': {
     id: 'bent-over-db-row',
