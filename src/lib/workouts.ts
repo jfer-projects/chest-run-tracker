@@ -10,21 +10,31 @@ const demo = (id: ExerciseId, badge: string): ExerciseMedia => ({
 });
 
 export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
+  // ---------------- Workout A ----------------
   'perfect-pushup-deficit': {
     id: 'perfect-pushup-deficit',
     name: 'Perfect Pushup Deficit Press',
     equipment: 'Perfect Pushups',
-    targetMuscle: 'Lower Pec Shelf (Costal Head)',
+    targetMuscle: 'Whole Chest, Lower Pec Shelf',
     targetReps: '8-12',
     defaultRest: 60,
     unit: 'reps',
     weighted: false,
     formCues: [
       'Bottom: handles parallel (palms facing), drop your chest 2 inches below the handles for a deep stretch',
-      'Top: press up while rotating the handles inward, squeezing the bottom corners of the chest together hard',
-      '3-second lowering tempo, rigid plank',
+      'Top: press up while rotating the handles inward and squeeze the chest hard',
+      '3-second lowering tempo, rigid plank, stop 1-2 reps short of failure',
     ],
-    anatomicalTip: 'Internal rotation at full extension maximally shortens the costal/sternal pec fibers.',
+    anatomicalTip:
+      'The deficit stretch is what builds the chest here. The handle twist mostly turns the forearms, so treat it as a squeeze cue and wrist saver, not magic.',
+    progressions: [
+      'Slow the lowering to 4 seconds',
+      'Add a 2-second pause at the bottom',
+      'Raise the handles for a deeper deficit',
+      'Loop a band across your upper back, ends under your hands',
+      'Wear a loaded backpack',
+    ],
+    swaps: ['perfect-pushup-standard'],
     media: demo('perfect-pushup-deficit', 'Lower Pec Shelf'),
   },
   'low-bar-inverted-row': {
@@ -38,11 +48,17 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     unit: 'reps',
     weighted: false,
     formCues: [
-      'Hang directly beneath the bar, heels on the floor, body in a rigid straight plank',
+      'Hang directly beneath the bar, body perpendicular to it, heels on the floor, rigid plank',
       'Overhand or neutral grip; pull your lower sternum up to touch the bar',
       'Pinch shoulder blades at the top, lower under control to full arm extension',
     ],
-    anatomicalTip: 'Pulling the shoulder girdle back balances the pushing volume and flattens and accentuates the chest shelf.',
+    anatomicalTip: 'Pulling the shoulders back balances all the pressing and shows off the chest shelf.',
+    progressions: [
+      'Walk your feet further forward (body flatter)',
+      'Pause 2 seconds at the top',
+      'Elevate your feet on a chair',
+      'Wear a loaded backpack',
+    ],
     media: demo('low-bar-inverted-row', 'Postural Antagonist'),
   },
   'incline-pushup-bar': {
@@ -50,17 +66,24 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     name: 'Incline Push-Ups on Low Bar',
     equipment: 'Low Bar',
     setup: 'Doorway bar at thigh / hip height',
-    targetMuscle: 'Abdominal / Costal Head (Lower Pec Border)',
+    targetMuscle: 'Lower Pec Border (Dip Angle)',
     targetReps: '10-15',
     defaultRest: 45,
     unit: 'reps',
     weighted: false,
     formCues: [
-      'Hands on the bar slightly wider than shoulders, walk your feet back into a plank',
+      'Hands on the bar slightly wider than shoulders, shoulders square to the bar, feet walked back',
       'Lower your lower sternum to touch the bar',
       'Press down and away from the bar: drive the arms downward like a parallel-bar dip',
     ],
-    anatomicalTip: 'Hands elevated at thigh height make the arms adduct downward, matching the costal fibers\' line of pull, like a chest dip.',
+    anatomicalTip:
+      "Hands elevated make the arms push downward relative to the torso, matching the lower fibers' line of pull, like a chest dip.",
+    progressions: [
+      'Slow the lowering to 3-4 seconds',
+      'Pause with your chest at the bar',
+      'Lower the bar one notch (closer to a floor push-up)',
+      'Loop a band across your upper back',
+    ],
     media: demo('incline-pushup-bar', 'Dip Simulator'),
   },
   'db-bicep-curl': {
@@ -77,14 +100,73 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
       'Curl up while turning pinkies up toward your shoulders at the top',
       '2-second controlled lowering',
     ],
-    anatomicalTip: 'Terminal supination maximizes activation of the biceps short head.',
+    anatomicalTip: 'Turning the pinkies up at the top maximizes the biceps squeeze.',
+    progressions: ['Add 2.5-5 lb', 'Slow the lowering to 3-4 seconds', 'Pause 1 second at the top'],
     media: demo('db-bicep-curl', 'Bicep Peak'),
+  },
+  'db-floor-fly': {
+    id: 'db-floor-fly',
+    name: 'DB Floor Flyes',
+    equipment: 'Dumbbells',
+    setup: 'Floor mat, lighter dumbbells',
+    targetMuscle: 'Whole Chest (Squeeze / Adduction)',
+    targetReps: '12-15',
+    defaultRest: 45,
+    unit: 'reps',
+    weighted: true,
+    formCues: [
+      'Lie on the floor, dumbbells over your chest, palms facing, slight bend in the elbows',
+      'Open the arms in a wide arc until the upper arms touch the floor',
+      'Hug a big tree back to the top and squeeze the chest for 1 second',
+    ],
+    anatomicalTip: "Bringing the arms across the body is the chest's main job, and push-ups barely load it. The floor protects your shoulders at the bottom.",
+    progressions: ['Add 2.5-5 lb', '2-second squeeze at the top', 'Slow the lowering to 3 seconds', 'Do them in a glute bridge (lower-chest bias)'],
+    swaps: [],
+    media: demo('db-floor-fly', 'Chest Squeeze'),
+  },
+  'band-pull-apart': {
+    id: 'band-pull-apart',
+    name: 'Band Pull-Aparts',
+    equipment: 'Bands',
+    targetMuscle: 'Rear Delts & Upper Back',
+    targetReps: '15-20',
+    defaultRest: 45,
+    unit: 'reps',
+    weighted: false,
+    formCues: [
+      'Hold the band at shoulder height, arms straight, hands shoulder-width',
+      'Pull the band apart until it touches your chest, squeezing the shoulder blades',
+      'Control it back, don\'t let the band snap you forward',
+    ],
+    anatomicalTip: 'Strong rear delts and upper back keep the shoulders healthy under all the pressing and pull them back so the chest sits proud.',
+    progressions: ['Use a heavier band', 'Narrow your grip', 'Pause 2 seconds with the band at your chest'],
+    swaps: ['db-reverse-fly'],
+    media: demo('band-pull-apart', 'Shoulder Health'),
+  },
+  'db-reverse-fly': {
+    id: 'db-reverse-fly',
+    name: 'Bent-Over DB Reverse Flyes',
+    equipment: 'Dumbbells',
+    targetMuscle: 'Rear Delts & Upper Back',
+    targetReps: '12-15',
+    defaultRest: 45,
+    unit: 'reps',
+    weighted: true,
+    formCues: [
+      'Hinge forward with a flat back, light dumbbells hanging, slight elbow bend',
+      'Raise the arms out wide to shoulder height, squeeze the shoulder blades',
+      'Lower slowly, no swinging',
+    ],
+    anatomicalTip: 'Same job as pull-aparts when you don\'t have a band handy.',
+    progressions: ['Add 2.5 lb', 'Pause 1 second at the top', 'Slow the lowering to 3 seconds'],
+    swaps: ['band-pull-apart'],
+    media: demo('db-reverse-fly', 'Shoulder Health'),
   },
   'perfect-pushup-iso-hold': {
     id: 'perfect-pushup-iso-hold',
     name: 'Perfect Pushup Iso-Hold Burnout',
     equipment: 'Perfect Pushups',
-    targetMuscle: 'Pec Motor Unit Exhaustion',
+    targetMuscle: 'Chest Exhaustion',
     targetReps: 'To failure',
     defaultRest: 0,
     unit: 'seconds',
@@ -92,12 +174,15 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     formCues: [
       'Hold the deep deficit bottom stretch for 5 seconds',
       'Push halfway up and hold static for 5 seconds',
-      'Lock out with a full inward rotation squeeze for 5 seconds',
+      'Lock out with a full inward squeeze for 5 seconds',
       'Cycle through until technical failure',
     ],
-    anatomicalTip: 'Loaded isometrics under stretch drive high mechanical tension and fiber recruitment.',
+    anatomicalTip: 'Loaded holds in the stretched position add a lot of tension in very little time.',
+    progressions: ['Beat last session\'s total hold time', 'Hold 7 seconds per position', 'Wear a loaded backpack'],
     media: demo('perfect-pushup-iso-hold', 'Metabolic Finisher'),
   },
+
+  // ---------------- Workout B ----------------
   'glute-bridge-floor-press': {
     id: 'glute-bridge-floor-press',
     name: 'Glute-Bridge DB Floor Press',
@@ -110,10 +195,11 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     weighted: true,
     formCues: [
       'Drive through your heels into a rigid, high glute bridge',
-      'Keep hips in a high bridge the whole set: it creates a 20° decline angle',
+      'Keep hips in a high bridge the whole set: it creates the decline angle',
       'Lower until triceps gently tap the floor, pause briefly, press up',
     ],
-    anatomicalTip: 'Bridging tilts the torso about 20° relative to the pressing path, replicating a decline press without a bench.',
+    anatomicalTip: 'Bridging tilts the torso so you press on a decline line, the best lower-chest angle without a bench.',
+    progressions: ['Add 2.5-5 lb per hand', 'Pause 2 seconds with triceps on the floor', 'Slow the lowering to 3-4 seconds', 'Single-leg bridge (harder hold)'],
     media: demo('glute-bridge-floor-press', 'Decline Angle'),
   },
   'bent-over-db-row': {
@@ -131,6 +217,7 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
       'Squeeze shoulder blades together for 1 second at the top',
     ],
     anatomicalTip: 'Pulling toward the hip recruits the lower lats.',
+    progressions: ['Add 2.5-5 lb', 'Pause 2 seconds at the top', 'Slow the lowering to 3 seconds'],
     media: demo('bent-over-db-row', 'Back Density'),
   },
   'close-grip-perfect-pushup': {
@@ -138,7 +225,7 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     name: 'Close-Grip Perfect Pushups',
     equipment: 'Perfect Pushups',
     setup: 'Handles 6-8 inches apart',
-    targetMuscle: 'Inner Sternal Seam & Triceps',
+    targetMuscle: 'Inner Chest & Triceps',
     targetReps: '8-12',
     defaultRest: 45,
     unit: 'reps',
@@ -146,9 +233,10 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     formCues: [
       'Set the handles 6-8 inches apart on the floor',
       'Descend keeping elbows tucked against your ribs',
-      'At the top, actively twist the handles inward and crush the inner chest together',
+      'At the top, twist the handles inward and squeeze the inner chest',
     ],
-    anatomicalTip: 'A narrow base plus the inward twist loads the inner sternal insertions.',
+    anatomicalTip: 'A narrow base shifts work toward the inner chest and triceps.',
+    progressions: ['Slow the lowering to 3-4 seconds', 'Pause at the bottom', 'Loop a band across your upper back', 'Feet on a chair'],
     media: demo('close-grip-perfect-pushup', 'Inner Pec Seam'),
   },
   'overhead-db-tricep-ext': {
@@ -167,7 +255,47 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
       'Extend to full lockout without flaring the elbows or arching your lower back',
     ],
     anatomicalTip: 'Overhead position stretches the long head from its scapular attachment.',
+    progressions: ['Add 2.5-5 lb', 'Slow the lowering to 3 seconds', 'Pause in the stretch'],
     media: demo('overhead-db-tricep-ext', 'Tricep Long Head'),
+  },
+  'bridge-squeeze-press': {
+    id: 'bridge-squeeze-press',
+    name: 'Glute-Bridge DB Squeeze Press',
+    equipment: 'Dumbbells',
+    setup: 'Floor mat',
+    targetMuscle: 'Lower & Inner Chest (Squeeze)',
+    targetReps: '10-12',
+    defaultRest: 60,
+    unit: 'reps',
+    weighted: true,
+    formCues: [
+      'Hips up in a high glute bridge, dumbbells pressed together over your chest',
+      'Crush the dumbbells into each other the whole set, never let them separate',
+      'Lower to your chest and press back up, squeezing the inner chest hard',
+    ],
+    anatomicalTip: 'Pressing the dumbbells together loads the chest\'s squeezing job, and the bridge keeps the lower-chest angle.',
+    progressions: ['Add 2.5-5 lb', 'Pause 2 seconds at the chest', 'Slow the lowering to 3-4 seconds'],
+    media: demo('bridge-squeeze-press', 'Squeeze + Decline'),
+  },
+  'chin-up': {
+    id: 'chin-up',
+    name: 'Doorway Chin-Ups',
+    equipment: 'Doorway Bar',
+    setup: 'Doorway bar at overhead height',
+    targetMuscle: 'Lats & Biceps (Vertical Pull)',
+    targetReps: '5-8',
+    defaultRest: 60,
+    unit: 'reps',
+    weighted: false,
+    formCues: [
+      'Underhand grip shoulder-width, hang with straight arms, knees bent',
+      'Pull your chest toward the bar until your chin clears it',
+      'Lower all the way down under control',
+    ],
+    anatomicalTip: 'A vertical pull widens the back, which frames the chest and balances all the pressing.',
+    progressions: ['Add reps up to 8', 'Slow the lowering to 3-4 seconds', 'Pause with chin over the bar', 'Wear a loaded backpack'],
+    swaps: ['chin-up-negative'],
+    media: demo('chin-up', 'Vertical Pull'),
   },
   'bench-dips': {
     id: 'bench-dips',
@@ -181,15 +309,160 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
     weighted: false,
     formCues: [
       'Hands on the chair edge, legs extended forward',
-      'Lower your hips straight down until elbows hit 90°',
-      'Press straight down through your palms; lock out and hold the top 2 seconds each rep',
+      'Lower your hips straight down only until elbows hit 90°, no deeper',
+      'Press straight down through your palms; hold the top 2 seconds each rep',
+      'Front of the shoulder pinches? Stop and swap to the close-grip burnout',
     ],
-    anatomicalTip: 'Downward shoulder extension gives a final burnout to the lower pec perimeter.',
+    anatomicalTip: 'Downward pressing finishes the lower chest, but this position loads the front shoulder, so depth control matters.',
+    progressions: ['Beat last session\'s reps', 'Straighten your legs fully', 'Feet on a second chair'],
+    swaps: ['close-grip-burnout'],
     media: {
       ...demo('bench-dips', 'Finisher Burnout'),
       photos: ['/demos/photos/bench-dips.jpg'],
       credit: { text: 'Photo: Gustavo Fring / Pexels', url: 'https://www.pexels.com/photo/6496123/' },
     },
+  },
+
+  // ---------------- Swap alternatives ----------------
+  'perfect-pushup-standard': {
+    id: 'perfect-pushup-standard',
+    name: 'Perfect Pushups (No Deficit)',
+    equipment: 'Perfect Pushups',
+    targetMuscle: 'Whole Chest',
+    targetReps: '8-12',
+    defaultRest: 60,
+    unit: 'reps',
+    weighted: false,
+    formCues: [
+      'Lower until your chest is level with the handles, not below',
+      'Press up and squeeze the chest at the top',
+      'Shoulder-friendly option when the deep stretch bothers you',
+    ],
+    anatomicalTip: 'Same pattern as the deficit press with less stretch on the shoulder.',
+    progressions: ['Slow the lowering to 4 seconds', 'Pause at the bottom', 'Loop a band across your upper back', 'Go back to the deficit version'],
+    swaps: ['perfect-pushup-deficit'],
+    media: demo('perfect-pushup-standard', 'Shoulder-Friendly'),
+  },
+  'close-grip-burnout': {
+    id: 'close-grip-burnout',
+    name: 'Close-Grip Pushup Burnout',
+    equipment: 'Perfect Pushups',
+    setup: 'Handles 6-8 inches apart',
+    targetMuscle: 'Inner Chest & Triceps Burnout',
+    targetReps: 'To failure',
+    defaultRest: 0,
+    unit: 'reps',
+    weighted: false,
+    formCues: ['Close handles, elbows tucked', 'Steady reps until form breaks', 'Drop to your knees to squeeze out a few more'],
+    anatomicalTip: 'A shoulder-friendly finisher that still hits the inner chest and triceps.',
+    progressions: ['Beat last session\'s reps', 'No knee reps'],
+    swaps: ['bench-dips'],
+    media: demo('close-grip-burnout', 'Finisher Burnout'),
+  },
+  'chin-up-negative': {
+    id: 'chin-up-negative',
+    name: 'Chin-Up Negatives',
+    equipment: 'Doorway Bar',
+    setup: 'Doorway bar at overhead height, chair to step up',
+    targetMuscle: 'Lats & Biceps (Vertical Pull)',
+    targetReps: '4-6',
+    defaultRest: 60,
+    unit: 'reps',
+    weighted: false,
+    formCues: ['Step up so your chin is over the bar', 'Lower yourself as slowly as you can, 3-5 seconds', 'Step back up and repeat'],
+    anatomicalTip: 'The lowering half builds the strength for full chin-ups.',
+    progressions: ['Lower for 5+ seconds', 'Add a rep', 'Try one full chin-up first, then negatives'],
+    swaps: ['chin-up'],
+    media: demo('chin-up-negative', 'Vertical Pull'),
+  },
+
+  // ---------------- Leg Day ----------------
+  'goblet-squat': {
+    id: 'goblet-squat',
+    name: 'Goblet Squats',
+    equipment: 'Dumbbells',
+    targetMuscle: 'Quads & Glutes',
+    targetReps: '10-12',
+    defaultRest: 60,
+    unit: 'reps',
+    weighted: true,
+    formCues: ['Hold one dumbbell vertically at your chest', 'Sit down between your heels, chest up, knees tracking over toes', 'Drive up through the whole foot'],
+    anatomicalTip: 'The front-held weight keeps your torso upright so the quads and glutes do the work.',
+    progressions: ['Add 5 lb', '3-second lowering', 'Pause at the bottom'],
+    media: demo('goblet-squat', 'Legs'),
+  },
+  'db-rdl': {
+    id: 'db-rdl',
+    name: 'DB Romanian Deadlifts',
+    equipment: 'Dumbbells',
+    targetMuscle: 'Hamstrings & Glutes',
+    targetReps: '10-12',
+    defaultRest: 60,
+    unit: 'reps',
+    weighted: true,
+    formCues: ['Soft knees, push your hips straight back', 'Slide the dumbbells down your thighs with a flat back until you feel a hamstring stretch', 'Squeeze the glutes to stand tall'],
+    anatomicalTip: 'Hinging trains the back of the legs that squats miss.',
+    progressions: ['Add 5 lb', '3-second lowering', 'Single-leg version'],
+    media: demo('db-rdl', 'Legs'),
+  },
+  'bulgarian-split-squat': {
+    id: 'bulgarian-split-squat',
+    name: 'Bulgarian Split Squats',
+    equipment: 'Chair / Couch',
+    setup: 'Back foot on a chair',
+    targetMuscle: 'Quads & Glutes (Single Leg)',
+    targetReps: '8-10 each',
+    defaultRest: 45,
+    unit: 'reps',
+    weighted: true,
+    formCues: ['Back foot laces-down on the chair, front foot a big step forward', 'Drop the back knee straight down, front shin fairly vertical', 'Do all reps on one leg, then switch'],
+    anatomicalTip: 'Single-leg work fixes side-to-side imbalances and is brutal with light weight.',
+    progressions: ['Hold dumbbells', 'Add 2.5-5 lb', '3-second lowering'],
+    swaps: ['reverse-lunge'],
+    media: demo('bulgarian-split-squat', 'Legs'),
+  },
+  'reverse-lunge': {
+    id: 'reverse-lunge',
+    name: 'DB Reverse Lunges',
+    equipment: 'Dumbbells',
+    targetMuscle: 'Quads & Glutes (Single Leg)',
+    targetReps: '8-10 each',
+    defaultRest: 45,
+    unit: 'reps',
+    weighted: true,
+    formCues: ['Step back and drop the back knee toward the floor', 'Front knee over the foot, torso upright', 'Push through the front heel to return'],
+    anatomicalTip: 'Easier on the knees than forward lunges.',
+    progressions: ['Add 2.5-5 lb', 'Pause at the bottom'],
+    swaps: ['bulgarian-split-squat'],
+    media: demo('reverse-lunge', 'Legs'),
+  },
+  'db-calf-raise': {
+    id: 'db-calf-raise',
+    name: 'Standing DB Calf Raises',
+    equipment: 'Dumbbells',
+    targetMuscle: 'Calves',
+    targetReps: '15-20',
+    defaultRest: 45,
+    unit: 'reps',
+    weighted: true,
+    formCues: ['Stand tall holding dumbbells, balls of the feet on a step or book if you can', 'Rise as high as possible, pause 1 second', 'Lower slowly into a full stretch'],
+    anatomicalTip: 'Calves respond to full range and pauses more than heavy weight.',
+    progressions: ['Add 5 lb', 'Single-leg', '2-second pause at the top'],
+    media: demo('db-calf-raise', 'Legs'),
+  },
+  'wall-sit': {
+    id: 'wall-sit',
+    name: 'Wall Sit Burnout',
+    equipment: 'Bodyweight',
+    targetMuscle: 'Quads',
+    targetReps: 'To failure',
+    defaultRest: 0,
+    unit: 'seconds',
+    weighted: false,
+    formCues: ['Back flat on the wall, thighs parallel to the floor', 'Knees over ankles', 'Hold until you can\'t'],
+    anatomicalTip: 'A simple quad finisher with no equipment.',
+    progressions: ['Beat last session\'s time', 'Hold a dumbbell on your lap'],
+    media: demo('wall-sit', 'Finisher'),
   },
 };
 
@@ -198,24 +471,61 @@ export const WORKOUTS: Record<WorkoutType, WorkoutTemplate> = {
     type: 'A',
     name: 'Workout A',
     subtitle: 'Rotating Deficit & Biceps',
-    equipment: ['Perfect Pushups', 'Doorway bar (waist, then thigh height)', 'Dumbbells'],
+    equipment: ['Perfect Pushups', 'Doorway bar (waist, then thigh height)', 'Dumbbells', 'Band'],
     blocks: [
       { id: 'a1', name: 'Superset 1', rounds: 4, exercises: ['perfect-pushup-deficit', 'low-bar-inverted-row'] },
       { id: 'a2', name: 'Superset 2', rounds: 3, exercises: ['incline-pushup-bar', 'db-bicep-curl'] },
-      { id: 'a3', name: 'Finisher', rounds: 1, exercises: ['perfect-pushup-iso-hold'] },
+      { id: 'a3', name: 'Superset 3', rounds: 2, exercises: ['db-floor-fly', 'band-pull-apart'] },
+      { id: 'a4', name: 'Finisher', rounds: 1, exercises: ['perfect-pushup-iso-hold'] },
     ],
   },
   B: {
     type: 'B',
     name: 'Workout B',
     subtitle: 'Bridge Decline & Triceps',
-    equipment: ['Dumbbells', 'Floor mat', 'Perfect Pushups', 'Sturdy chair or couch'],
+    equipment: ['Dumbbells', 'Floor mat', 'Perfect Pushups', 'Doorway bar (overhead)', 'Sturdy chair or couch'],
     blocks: [
       { id: 'b1', name: 'Superset 1', rounds: 4, exercises: ['glute-bridge-floor-press', 'bent-over-db-row'] },
       { id: 'b2', name: 'Superset 2', rounds: 3, exercises: ['close-grip-perfect-pushup', 'overhead-db-tricep-ext'] },
-      { id: 'b3', name: 'Finisher', rounds: 1, exercises: ['bench-dips'] },
+      { id: 'b3', name: 'Superset 3', rounds: 2, exercises: ['bridge-squeeze-press', 'chin-up'] },
+      { id: 'b4', name: 'Finisher', rounds: 1, exercises: ['bench-dips'] },
     ],
   },
+  L: {
+    type: 'L',
+    name: 'Leg Day',
+    subtitle: 'Separate lower-body session',
+    equipment: ['Dumbbells', 'Chair'],
+    blocks: [
+      { id: 'l1', name: 'Superset 1', rounds: 3, exercises: ['goblet-squat', 'db-rdl'] },
+      { id: 'l2', name: 'Superset 2', rounds: 3, exercises: ['bulgarian-split-squat', 'db-calf-raise'] },
+      { id: 'l3', name: 'Finisher', rounds: 1, exercises: ['wall-sit'] },
+    ],
+  },
+};
+
+export interface WarmupStep {
+  name: string;
+  cue: string;
+  seconds: number;
+}
+
+/** Short guided warm-ups so the first hard set isn't done cold. */
+export const WARMUPS: Record<'chest' | 'legs', WarmupStep[]> = {
+  chest: [
+    { name: 'Arm Circles', cue: '15 seconds forward, 15 seconds backward, getting bigger', seconds: 30 },
+    { name: 'Band Pull-Aparts', cue: 'Light band, 15 easy reps, squeeze the shoulder blades', seconds: 30 },
+    { name: 'Band Dislocates', cue: 'Wide grip, slowly pass the band over your head and behind you', seconds: 30 },
+    { name: 'Scap Push-Ups', cue: 'Plank, arms straight; let the chest sink between the shoulders, then push it away', seconds: 30 },
+    { name: 'Easy Incline Push-Ups', cue: '10 easy reps on the bar or a counter, nowhere near failure', seconds: 40 },
+  ],
+  legs: [
+    { name: 'Leg Swings', cue: '10 front-to-back and 10 side-to-side each leg, holding the wall', seconds: 40 },
+    { name: 'Bodyweight Squats', cue: '15 slow reps, sitting deep', seconds: 40 },
+    { name: 'Glute Bridges', cue: '15 reps, squeeze at the top', seconds: 30 },
+    { name: 'Hip Hinges', cue: 'Hands on hips, push the hips back with a flat back, 12 reps', seconds: 30 },
+    { name: 'Reverse Lunges', cue: '5 easy reps each leg', seconds: 40 },
+  ],
 };
 
 export interface WorkoutStep {
@@ -223,20 +533,27 @@ export interface WorkoutStep {
   blockName: string;
   round: number;
   rounds: number;
+  /** The exercise in the template; the one actually performed may be a swap (see resolveExercise). */
   exerciseId: ExerciseId;
 }
 
-/** Flattens a template into the ordered list of sets the player walks through. */
-export function buildSteps(type: WorkoutType): WorkoutStep[] {
+/** Flattens a template into the ordered list of sets the player walks through. Deload weeks halve the rounds. */
+export function buildSteps(type: WorkoutType, deload = false): WorkoutStep[] {
   const steps: WorkoutStep[] = [];
   WORKOUTS[type].blocks.forEach((block, blockIndex) => {
-    for (let round = 1; round <= block.rounds; round++) {
+    const rounds = deload ? Math.ceil(block.rounds / 2) : block.rounds;
+    for (let round = 1; round <= rounds; round++) {
       for (const exerciseId of block.exercises) {
-        steps.push({ blockIndex, blockName: block.name, round, rounds: block.rounds, exerciseId });
+        steps.push({ blockIndex, blockName: block.name, round, rounds, exerciseId });
       }
     }
   });
   return steps;
+}
+
+/** Applies the user's persistent swaps. */
+export function resolveExercise(id: ExerciseId, swaps: Partial<Record<ExerciseId, ExerciseId>>): ExerciseDefinition {
+  return EXERCISES[swaps[id] ?? id];
 }
 
 /** Lower bound of a "8-12" style target, used as the default reps value. */
@@ -244,4 +561,14 @@ export function defaultReps(exercise: ExerciseDefinition): number {
   if (exercise.unit === 'seconds') return 30;
   const match = exercise.targetReps.match(/^(\d+)/);
   return match ? Number(match[1]) : 10;
+}
+
+/** Upper bound of a "8-12" style target, or null for "To failure". */
+export function topReps(exercise: ExerciseDefinition): number | null {
+  const match = exercise.targetReps.match(/^\d+-(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
+export function warmupFor(type: WorkoutType): WarmupStep[] {
+  return type === 'L' ? WARMUPS.legs : WARMUPS.chest;
 }

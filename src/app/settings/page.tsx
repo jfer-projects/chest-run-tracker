@@ -9,11 +9,12 @@ import { BottomNav, Stepper, Toggle } from '@/components/ui';
 import { CardioIcon } from '@/components/RunTimer';
 import { CloudBackup } from '@/components/CloudBackup';
 import { CARDIO_LABEL } from '@/lib/run';
-import type { WorkoutSessionLog } from '@/lib/types';
+import type { ExerciseId, WorkoutSessionLog } from '@/lib/types';
+import { EXERCISES } from '@/lib/workouts';
 
 export default function SettingsPage() {
   const hydrated = useHydrated();
-  const { settings, updateSettings, history, importHistory } = useStore();
+  const { settings, updateSettings, history, importHistory, setSwap } = useStore();
   const fileInput = useRef<HTMLInputElement>(null);
 
   if (!hydrated) return <div className="min-h-dvh" />;
@@ -46,6 +47,34 @@ export default function SettingsPage() {
       <section className="space-y-3">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cloud backup</h2>
         <CloudBackup />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Program</h2>
+        <Row label="Guided warm-up" hint="About 3 minutes before the first set">
+          <Toggle label="Guided warm-up" checked={settings.warmupEnabled} onChange={(v) => updateSettings({ warmupEnabled: v })} />
+        </Row>
+        <Stepper
+          label="Suggest a deload every (weeks)"
+          value={settings.deloadEveryWeeks}
+          onChange={(v) => updateSettings({ deloadEveryWeeks: Math.min(12, Math.max(4, Math.round(v))) })}
+          min={4}
+        />
+        {Object.entries(settings.swaps).length > 0 && (
+          <div className="space-y-2 rounded-2xl bg-zinc-900 p-4">
+            <div className="text-sm font-medium">Active swaps</div>
+            {Object.entries(settings.swaps).map(([from, to]) => (
+              <div key={from} className="flex items-center gap-2 text-sm">
+                <span className="min-w-0 flex-1 text-zinc-400">
+                  {EXERCISES[from as ExerciseId].name} → <span className="text-zinc-100">{EXERCISES[to as ExerciseId].name}</span>
+                </span>
+                <button type="button" onClick={() => setSwap(from as ExerciseId, null)} className="text-xs text-emerald-400">
+                  Undo
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="space-y-3">

@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, CloudOff, Dumbbell, Flame, Play, RotateCcw } from 'lucide-react';
+import { BatteryLow, ChevronRight, CloudOff, Dumbbell, Flame, Footprints, Play, RotateCcw } from 'lucide-react';
 import { useSyncStatus } from '@/lib/sync';
 import { CardioIcon } from '@/components/RunTimer';
-import { useStore, nextWorkoutType } from '@/lib/store';
+import { useStore, nextWorkoutType, deloadDue, isDeloading } from '@/lib/store';
 import { useHydrated } from '@/lib/hooks';
-import { EXERCISES, WORKOUTS } from '@/lib/workouts';
-import { sessionsInWeek, startOfWeek, weekStreak } from '@/lib/stats';
+import { WORKOUTS, resolveExercise } from '@/lib/workouts';
+import { chestOnly, sessionsInWeek, startOfWeek, weekStreak } from '@/lib/stats';
+import { formatDate } from '@/lib/format';
+import { CoachNotes } from '@/components/CoachNotes';
 import { unlockAudio } from '@/lib/cues';
 import { BottomNav, ProgressRing, WorkoutBadge } from '@/components/ui';
 import { SessionCard } from '@/components/SessionCard';
@@ -17,14 +19,16 @@ import type { WorkoutType } from '@/lib/types';
 export default function Dashboard() {
   const hydrated = useHydrated();
   const router = useRouter();
-  const { history, settings, active, startSession } = useStore();
+  const { history, settings, active, startSession, startDeload, endDeload } = useStore();
   const sync = useSyncStatus((s) => s.state);
 
   if (!hydrated) return <div className="min-h-dvh" />;
 
   const next = nextWorkoutType(history);
   const template = WORKOUTS[next];
-  const thisWeek = sessionsInWeek(history, startOfWeek(new Date())).length;
+  const thisWeek = sessionsInWeek(chestOnly(history), startOfWeek(new Date())).length;
+  const lastLegDay = history.find((h) => h.workoutType === 'L');
+  const deloading = isDeloading(settings);
   const streak = weekStreak(history, settings.weeklyTarget);
 
   const begin = (type: WorkoutType) => {
@@ -59,6 +63,30 @@ export default function Dashboard() {
         </Link>
       )}
 
+      {deloading ? (
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-sky-500/40 bg-sky-500/10 px-4 py-3 text-sm">
+          <BatteryLow className="size-5 shrink-0 text-sky-400" />
+          <span className="flex-1 text-sky-200">
+            Deload week: half the sets, same weights, until {formatDate(new Date(settings.deloadUntil!).toISOString())}.
+          </span>
+          <button type="button" onClick={endDeload} className="text-xs text-sky-400 underline">
+            End early
+          </button>
+        </div>
+      ) : (
+        deloadDue(settings, history) && (
+          <div className="mb-4 rounded-2xl border border-sky-500/40 bg-sky-500/10 p-4 text-sm">
+            <p className="font-semibold text-sky-200">Time for a deload week</p>
+            <p className="mt-1 text-sky-300/80">
+              {settings.deloadEveryWeeks}+ weeks of hard training. An easy week (half the sets) lets your joints catch up.
+            </p>
+            <button type="button" onClick={startDeload} className="mt-3 rounded-xl bg-sky-500 px-4 py-2 font-bold text-zinc-950">
+              Start deload week
+            </button>
+          </div>
+        )
+      )}
+
       {active && (
         <Link
           href="/workout/active"
@@ -90,7 +118,7 @@ export default function Dashboard() {
                   {b.name}
                   <span className="block text-xs">{b.rounds > 1 ? `${b.rounds} rounds` : '1 round'}</span>
                 </span>
-                <span className="text-zinc-200">{b.exercises.map((id) => EXERCISES[id].name).join(' + ')}</span>
+                <span className="text-zinc-200">{b.exercises.map((id) => resolveExercise(id, settings.swaps).name).join(' + ')}</span>
               </li>
             ))}
           </ul>
@@ -99,7 +127,7 @@ export default function Dashboard() {
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <span className="flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-zinc-300">
-              <Dumbbell className="size-3.5" /> ~25 min strength
+              <Dumbbell className="size-3.5" /> ~25 min strength{deloading ? ' (deload: ~13)' : ''}
             </span>
             <span className="flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-zinc-300">
               <CardioIcon mode={settings.defaultCardio} className="size-3.5" /> 20 min run or ride
@@ -137,6 +165,25 @@ export default function Dashboard() {
           </p>
         </div>
       </section>
+
+      <section className="mb-6 flex items-center gap-4 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4">
+        <WorkoutBadge type="L" />
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold">Leg Day</h3>
+          <p className="truncate text-sm text-zinc-400">
+            Separate &amp; optional · {lastLegDay ? `last ${formatDate(lastLegDay.date)}` : 'not done yet'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => begin('L')}
+          className="flex items-center gap-1.5 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-bold text-zinc-950"
+        >
+          <Footprints className="size-4" /> Start
+        </button>
+      </section>
+
+      <CoachNotes />
 
       <section>
         <div className="mb-3 flex items-center justify-between">

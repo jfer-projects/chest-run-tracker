@@ -51,6 +51,11 @@ export function countdownTick() {
   vibrate(60);
 }
 
+/** Tempo metronome: soft ticks while lowering, a brighter one to press up. No vibration. */
+export function tempoTick(accent: boolean) {
+  tone(accent ? 1046 : 523, accent ? 90 : 60, 0, accent ? 0.22 : 0.12);
+}
+
 /** The zero / go signal at the end of a countdown. */
 export function countdownDone() {
   tone(1320, 180);

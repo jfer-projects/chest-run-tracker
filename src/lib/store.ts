@@ -2,11 +2,11 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CardioMode, ExerciseId, Settings, SetLog, WorkoutSessionLog, WorkoutType } from './types';
-import { EXERCISES, buildSteps } from './workouts';
+import type { CardioMode, Effort, ExerciseId, Measurement, Settings, SetLog, WorkoutSessionLog, WorkoutType } from './types';
+import { buildSteps, resolveExercise, warmupFor } from './workouts';
 import { RUN_PHASES, RUN_TOTAL_SEC, phaseIndexAt } from './run';
 
-export type SessionPhase = 'strength' | 'run-offer' | 'run' | 'summary';
+export type SessionPhase = 'warmup' | 'strength' | 'run-offer' | 'run' | 'summary';
 
 export interface RunState {
   elapsedMs: number; // accumulated while paused
@@ -23,6 +23,10 @@ export interface ActiveSession {
   startedAt: number;
   endedAt?: number;
   phase: SessionPhase;
+  /** Halved rounds for a deload week, fixed when the session starts. */
+  deload?: boolean;
+  warmupIndex?: number;
+  warmupEndsAt?: number | null;
   stepIndex: number;
   sets: Partial<Record<ExerciseId, SetLog[]>>;
   restEndsAt: number | null;
@@ -41,9 +45,13 @@ interface StoreState {
   pendingDeletes: string[];
   /** When settings last changed on this device, for last-write-wins cloud sync. 0 = never. */
   settingsUpdatedAt: number;
+  measurements: Measurement[];
+  pendingMeasurementDeletes: string[];
 
   startSession: (type: WorkoutType) => void;
-  completeSet: (reps: number, weightLbs?: number) => void;
+  nextWarmup: () => void;
+  skipWarmup: () => void;
+  completeSet: (reps: number, weightLbs?: number, effort?: Effort) => void;
   previousStep: () => void;
   addRest: (seconds: number) => void;
   endRest: () => void;
@@ -58,6 +66,17 @@ interface StoreState {
   deleteLog: (id: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   importHistory: (logs: WorkoutSessionLog[]) => void;
+  setSwap: (original: ExerciseId, replacement: ExerciseId | null) => void;
+  startDeload: () => void;
+  endDeload: () => void;
+  addMeasurement: (m: Omit<Measurement, 'id'>) => void;
+  deleteMeasurement: (id: string) => void;
+}
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function isDeloading(settings: Settings, now = Date.now()): boolean {
+  return settings.deloadUntil !== null && now < settings.deloadUntil;
 }
 
 export function runElapsedSec(run: RunState, now = Date.now()): number {
@@ -76,40 +95,82 @@ export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       history: [],
-      settings: { useRoutineRest: true, restSeconds: 60, transitionSeconds: 15, soundEnabled: true, vibrationEnabled: true, weeklyTarget: 3, defaultCardio: 'run' },
+      settings: {
+        useRoutineRest: true,
+        restSeconds: 60,
+        transitionSeconds: 15,
+        soundEnabled: true,
+        vibrationEnabled: true,
+        weeklyTarget: 3,
+        defaultCardio: 'run',
+        warmupEnabled: true,
+        swaps: {},
+        deloadEveryWeeks: 7,
+        lastDeloadAt: null,
+        deloadUntil: null,
+        tempoEnabled: false,
+      },
       lastWeights: {},
       lastReps: {},
       active: null,
       pendingDeletes: [],
       settingsUpdatedAt: 0,
+      measurements: [],
+      pendingMeasurementDeletes: [],
 
-      startSession: (type) =>
+      startSession: (type) => {
+        const { settings } = get();
+        const warmup = settings.warmupEnabled;
         set({
           active: {
             id: uuid(),
             workoutType: type,
             startedAt: Date.now(),
-            phase: 'strength',
+            phase: warmup ? 'warmup' : 'strength',
+            deload: isDeloading(settings),
+            warmupIndex: 0,
+            warmupEndsAt: warmup ? Date.now() + warmupFor(type)[0].seconds * 1000 : null,
             stepIndex: 0,
             sets: {},
             restEndsAt: null,
             run: freshRun(),
           },
-        }),
+        });
+      },
 
-      completeSet: (reps, weightLbs) => {
+      nextWarmup: () => {
+        const { active } = get();
+        if (!active || active.phase !== 'warmup') return;
+        const steps = warmupFor(active.workoutType);
+        const next = (active.warmupIndex ?? 0) + 1;
+        if (next >= steps.length) {
+          get().skipWarmup();
+          return;
+        }
+        set({ active: { ...active, warmupIndex: next, warmupEndsAt: Date.now() + steps[next].seconds * 1000 } });
+      },
+
+      skipWarmup: () => {
+        const { active } = get();
+        if (!active) return;
+        set({ active: { ...active, phase: 'strength', warmupEndsAt: null } });
+      },
+
+      completeSet: (reps, weightLbs, effort) => {
         const { active, settings, lastWeights, lastReps } = get();
         if (!active) return;
-        const steps = buildSteps(active.workoutType);
+        const steps = buildSteps(active.workoutType, active.deload);
         const step = steps[active.stepIndex];
-        const exercise = EXERCISES[step.exerciseId];
-        const logs = [...(active.sets[step.exerciseId] ?? [])];
+        // Logged under the exercise actually performed, which may be a swap.
+        const exercise = resolveExercise(step.exerciseId, settings.swaps);
+        const logs = [...(active.sets[exercise.id] ?? [])];
         logs[step.round - 1] = {
           setNumber: step.round,
           targetReps: exercise.targetReps,
           completedReps: reps,
           weightLbs: exercise.weighted ? weightLbs : undefined,
           completed: true,
+          effort,
         };
         const isLast = active.stepIndex >= steps.length - 1;
         // Within a superset pair, only a quick switch; the full rest comes after the pair.
@@ -122,12 +183,12 @@ export const useStore = create<StoreState>()(
             : settings.restSeconds;
         set({
           lastWeights: exercise.weighted && weightLbs !== undefined
-            ? { ...lastWeights, [step.exerciseId]: weightLbs }
+            ? { ...lastWeights, [exercise.id]: weightLbs }
             : lastWeights,
-          lastReps: { ...lastReps, [step.exerciseId]: reps },
+          lastReps: { ...lastReps, [exercise.id]: reps },
           active: {
             ...active,
-            sets: { ...active.sets, [step.exerciseId]: logs },
+            sets: { ...active.sets, [exercise.id]: logs },
             stepIndex: isLast ? active.stepIndex : active.stepIndex + 1,
             phase: isLast ? 'run-offer' : 'strength',
             restEndsAt: isLast || rest <= 0 ? null : Date.now() + rest * 1000,
@@ -250,6 +311,31 @@ export const useStore = create<StoreState>()(
         for (const log of logs) byId.set(log.id, log);
         set({ history: [...byId.values()].sort((a, b) => b.date.localeCompare(a.date)) });
       },
+
+      setSwap: (original, replacement) => {
+        const swaps = { ...get().settings.swaps };
+        if (replacement && replacement !== original) swaps[original] = replacement;
+        else delete swaps[original];
+        get().updateSettings({ swaps });
+      },
+
+      startDeload: () => {
+        const now = Date.now();
+        get().updateSettings({ lastDeloadAt: now, deloadUntil: now + WEEK_MS });
+      },
+
+      endDeload: () => get().updateSettings({ deloadUntil: null }),
+
+      addMeasurement: (m) =>
+        set({
+          measurements: [{ ...m, id: uuid() }, ...get().measurements].sort((a, b) => b.date.localeCompare(a.date)),
+        }),
+
+      deleteMeasurement: (id) =>
+        set({
+          measurements: get().measurements.filter((m) => m.id !== id),
+          pendingMeasurementDeletes: [...get().pendingMeasurementDeletes, id],
+        }),
     }),
     {
       name: 'chest-run-companion',
@@ -263,8 +349,16 @@ export const useStore = create<StoreState>()(
   ),
 );
 
-/** Alternates A/B based on the most recent saved session. */
+/** Alternates A/B based on the most recent chest session; Leg Day doesn't affect the rotation. */
 export function nextWorkoutType(history: WorkoutSessionLog[]): WorkoutType {
-  const last = history[0];
+  const last = history.find((h) => h.workoutType !== 'L');
   return last?.workoutType === 'A' ? 'B' : 'A';
+}
+
+/** Deload is suggested once this many weeks have passed since training started or the last deload. */
+export function deloadDue(settings: Settings, history: WorkoutSessionLog[], now = Date.now()): boolean {
+  if (isDeloading(settings, now) || history.length === 0) return false;
+  const first = Math.min(...history.map((h) => new Date(h.date).getTime()));
+  const since = Math.max(first, settings.lastDeloadAt ?? 0);
+  return now - since >= settings.deloadEveryWeeks * WEEK_MS;
 }

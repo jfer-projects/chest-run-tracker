@@ -8,11 +8,40 @@ export type ExerciseId =
   | 'bent-over-db-row'
   | 'close-grip-perfect-pushup'
   | 'overhead-db-tricep-ext'
-  | 'bench-dips';
+  | 'bench-dips'
+  // Added chest/back work
+  | 'db-floor-fly'
+  | 'band-pull-apart'
+  | 'db-reverse-fly'
+  | 'bridge-squeeze-press'
+  | 'chin-up'
+  // Swap alternatives
+  | 'perfect-pushup-standard'
+  | 'close-grip-burnout'
+  | 'chin-up-negative'
+  // Leg Day
+  | 'goblet-squat'
+  | 'db-rdl'
+  | 'bulgarian-split-squat'
+  | 'reverse-lunge'
+  | 'db-calf-raise'
+  | 'wall-sit';
 
-export type WorkoutType = 'A' | 'B';
+/** A and B alternate as the chest program; L (Leg Day) is separate and optional. */
+export type WorkoutType = 'A' | 'B' | 'L';
 
-export type Equipment = 'Perfect Pushups' | 'Low Bar' | 'Dumbbells' | 'Chair / Couch';
+export const CHEST_WORKOUTS: WorkoutType[] = ['A', 'B'];
+
+export type Equipment =
+  | 'Perfect Pushups'
+  | 'Low Bar'
+  | 'Doorway Bar'
+  | 'Dumbbells'
+  | 'Bands'
+  | 'Chair / Couch'
+  | 'Bodyweight';
+
+export type Effort = 'easy' | 'solid' | 'max';
 
 export interface SetLog {
   setNumber: number;
@@ -20,6 +49,16 @@ export interface SetLog {
   completedReps?: number; // seconds when the exercise unit is 'seconds'
   weightLbs?: number;
   completed: boolean;
+  /** How hard the set felt; drives progression nudges. */
+  effort?: Effort;
+}
+
+export interface Measurement {
+  id: string;
+  date: string; // ISO
+  weightLbs?: number;
+  chestIn?: number;
+  waistIn?: number;
 }
 
 export interface MediaCredit {
@@ -58,6 +97,10 @@ export interface ExerciseDefinition {
   unit: 'reps' | 'seconds';
   /** Whether a dumbbell weight input is shown. */
   weighted: boolean;
+  /** Ways to make it harder once the top of the rep range is hit on every set, easiest first. */
+  progressions: string[];
+  /** Exercises that can replace this one (e.g. if a joint complains). */
+  swaps?: ExerciseId[];
 }
 
 export interface WorkoutBlock {
@@ -114,4 +157,16 @@ export interface Settings {
   weeklyTarget: number;
   /** Cardio offered first after strength; updates to whatever was last chosen. */
   defaultCardio: CardioMode;
+  /** Run the guided warm-up before the first set. */
+  warmupEnabled: boolean;
+  /** Persistent exercise substitutions: original id -> replacement id. */
+  swaps: Partial<Record<ExerciseId, ExerciseId>>;
+  /** Suggest a deload week after this many weeks of training. */
+  deloadEveryWeeks: number;
+  /** Epoch ms when the last deload week started (null = never). */
+  lastDeloadAt: number | null;
+  /** Epoch ms when the current deload week ends (null = not deloading). */
+  deloadUntil: number | null;
+  /** Beep a 3-second lowering count during sets. */
+  tempoEnabled: boolean;
 }

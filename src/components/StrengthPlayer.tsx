@@ -1,34 +1,64 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronLeft, Lightbulb, Plus, SkipForward, Wrench } from 'lucide-react';
+import { ArrowLeftRight, Check, ChevronLeft, History, Lightbulb, Plus, SkipForward, Timer, TrendingUp, Wrench } from 'lucide-react';
 import { useStore, type ActiveSession } from '@/lib/store';
 import { useNow } from '@/lib/hooks';
-import { EXERCISES, WORKOUTS, buildSteps, defaultReps } from '@/lib/workouts';
-import { countdownDone, countdownTick } from '@/lib/cues';
-import { formatClock } from '@/lib/format';
-import type { ExerciseDefinition } from '@/lib/types';
+import { EXERCISES, WORKOUTS, buildSteps, defaultReps, resolveExercise } from '@/lib/workouts';
+import { countdownDone, countdownTick, tempoTick } from '@/lib/cues';
+import { formatClock, formatDate } from '@/lib/format';
+import { formatSets, lastSetsFor, progressionAdvice, suggestReps } from '@/lib/stats';
+import type { Effort, ExerciseDefinition, ExerciseId } from '@/lib/types';
 import { ProgressRing, Stepper } from './ui';
 
+const EFFORTS: { id: Effort; label: string }[] = [
+  { id: 'easy', label: 'Easy' },
+  { id: 'solid', label: 'Solid' },
+  { id: 'max', label: 'Max' },
+];
+
 export function StrengthPlayer({ session }: { session: ActiveSession }) {
-  const { completeSet, previousStep, lastWeights, lastReps, skipStrength } = useStore();
-  const steps = buildSteps(session.workoutType);
+  const { completeSet, previousStep, lastWeights, lastReps, skipStrength, history, settings, setSwap, updateSettings } = useStore();
+  const steps = buildSteps(session.workoutType, session.deload);
   const step = steps[session.stepIndex];
-  const exercise = EXERCISES[step.exerciseId];
-  const existing = session.sets[step.exerciseId]?.[step.round - 1];
+  const exercise = resolveExercise(step.exerciseId, settings.swaps);
+  const existing = session.sets[exercise.id]?.[step.round - 1];
+  const last = lastSetsFor(history, exercise.id);
+  const advice = progressionAdvice(exercise, last?.sets);
+  const swapOptions: ExerciseId[] = [step.exerciseId, ...(EXERCISES[step.exerciseId].swaps ?? [])];
 
   const [reps, setReps] = useState(0);
   const [weight, setWeight] = useState(0);
+  const [effort, setEffort] = useState<Effort>('solid');
+  const [showSwap, setShowSwap] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
-  // Reset inputs whenever the step changes: prefer what was logged, then the last value used.
+  const today = session.sets[exercise.id];
+  const target = suggestReps(exercise, step.round, last?.sets, today, exercise.weighted ? weight : undefined);
+
+  // Reset inputs whenever the step or exercise changes: prefer what was logged, then today's target, then the last value used.
   useEffect(() => {
-    setReps(existing?.completedReps ?? lastReps[step.exerciseId] ?? defaultReps(exercise));
-    setWeight(existing?.weightLbs ?? lastWeights[step.exerciseId] ?? 15);
+    const startWeight = existing?.weightLbs ?? lastWeights[exercise.id] ?? 15;
+    setWeight(startWeight);
+    setReps(
+      existing?.completedReps ??
+        suggestReps(exercise, step.round, last?.sets, today, exercise.weighted ? startWeight : undefined) ??
+        lastReps[exercise.id] ??
+        defaultReps(exercise),
+    );
+    setEffort(existing?.effort ?? 'solid');
+    setShowSwap(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.stepIndex]);
+  }, [session.stepIndex, exercise.id]);
+
+  useTempo(settings.tempoEnabled && !session.restEndsAt);
 
   const nextStep = steps[session.stepIndex + 1];
   const block = WORKOUTS[session.workoutType].blocks[step.blockIndex];
+  const adviceStyle =
+    advice?.tone === 'progress'
+      ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+      : 'border-zinc-800 bg-zinc-900/60 text-zinc-300';
 
   return (
     <div className="flex min-h-[calc(100dvh-4rem)] flex-col">
@@ -36,6 +66,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
         <div className="mb-1 flex justify-between text-xs text-zinc-500">
           <span>
             {block.name} · Round {step.round} of {step.rounds}
+            {session.deload && <span className="ml-2 rounded bg-sky-500/15 px-1.5 py-0.5 font-semibold text-sky-400">Deload</span>}
           </span>
           <span>
             Set {session.stepIndex + 1}/{steps.length}
@@ -53,26 +84,87 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
 
       <div className="flex-1 space-y-4 px-4 pt-5 pb-4">
         <div>
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300">
               <Wrench className="size-3" /> {exercise.equipment}
             </span>
             <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-400">
               Set {step.round} of {step.rounds}
             </span>
+            {swapOptions.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setShowSwap((s) => !s)}
+                className="ml-auto flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300"
+              >
+                <ArrowLeftRight className="size-3" /> Swap
+              </button>
+            )}
           </div>
+          {showSwap && (
+            <div className="mb-3 space-y-1.5 rounded-2xl border border-zinc-800 bg-zinc-900 p-2">
+              {swapOptions.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setSwap(step.exerciseId, id === step.exerciseId ? null : id);
+                    setShowSwap(false);
+                  }}
+                  className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm ${
+                    id === exercise.id ? 'bg-emerald-500/15 font-semibold text-emerald-300' : 'text-zinc-300'
+                  }`}
+                >
+                  {EXERCISES[id].name}
+                  {id === step.exerciseId && <span className="ml-1 text-xs text-zinc-500">(programmed)</span>}
+                </button>
+              ))}
+              <p className="px-3 pb-1 text-xs text-zinc-500">Your choice sticks for future workouts until you swap back.</p>
+            </div>
+          )}
           <h2 className="text-2xl leading-tight font-bold">{exercise.name}</h2>
           <p className="mt-0.5 text-sm font-medium text-emerald-400">{exercise.targetMuscle}</p>
-          <p className="mt-1 text-lg text-zinc-300">
-            Target: <span className="font-semibold text-white">{exercise.targetReps}</span>
-            {exercise.unit === 'reps' && exercise.targetReps !== 'To failure' ? ' reps' : ''}
-          </p>
+          {target !== null ? (
+            <p className="mt-1 text-lg text-zinc-300">
+              Today&apos;s target: <span className="font-semibold text-white">{target} reps</span>
+              <span className="ml-2 text-sm text-zinc-500">range {exercise.targetReps}</span>
+            </p>
+          ) : (
+            <p className="mt-1 text-lg text-zinc-300">
+              Target: <span className="font-semibold text-white">{exercise.targetReps}</span>
+              {exercise.unit === 'reps' && exercise.targetReps !== 'To failure' ? ' reps' : ''}
+            </p>
+          )}
           {exercise.setup && (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-sm font-medium text-amber-300">
               <Wrench className="size-4" /> Setup: {exercise.setup}
             </p>
           )}
         </div>
+
+        {last && (
+          <div className={`space-y-1.5 rounded-2xl border p-3 text-sm ${adviceStyle}`}>
+            <p className="flex items-center gap-1.5 text-zinc-400">
+              <History className="size-4" /> Last time ({formatDate(last.date)}):{' '}
+              <span className="font-semibold text-zinc-100">{formatSets(exercise, last.sets)}</span>
+            </p>
+            {advice && (
+              <p className="flex gap-1.5">
+                <TrendingUp className="mt-0.5 size-4 shrink-0" /> {advice.text}
+              </p>
+            )}
+            <button type="button" onClick={() => setShowMore((s) => !s)} className="text-xs text-zinc-500 underline">
+              {showMore ? 'Hide' : 'More ways to progress'}
+            </button>
+            {showMore && (
+              <ol className="list-decimal space-y-0.5 pl-5 text-xs text-zinc-400">
+                {exercise.progressions.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )}
 
         <ExerciseDemo key={exercise.id} exercise={exercise} paused={!!session.restEndsAt} />
 
@@ -89,6 +181,18 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
             <Lightbulb className="size-4 shrink-0 text-emerald-400" />
             {exercise.anatomicalTip}
           </p>
+          {exercise.unit === 'reps' && (
+            <button
+              type="button"
+              onClick={() => updateSettings({ tempoEnabled: !settings.tempoEnabled })}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium ${
+                settings.tempoEnabled ? 'bg-emerald-500/15 text-emerald-300' : 'bg-zinc-800 text-zinc-400'
+              }`}
+            >
+              <Timer className="size-4" />
+              {settings.tempoEnabled ? 'Tempo beeps on: 3 down, 1 up' : 'Tempo beeps off'}
+            </button>
+          )}
         </div>
 
         <div className={`grid gap-3 ${exercise.weighted ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -102,9 +206,27 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
           {exercise.weighted && <Stepper label="Weight" value={weight} onChange={setWeight} step={2.5} unit="lb" />}
         </div>
 
+        <div>
+          <div className="mb-1.5 text-center text-xs font-semibold tracking-wider text-zinc-500 uppercase">How did it feel?</div>
+          <div className="grid grid-cols-3 gap-2">
+            {EFFORTS.map((e) => (
+              <button
+                key={e.id}
+                type="button"
+                onClick={() => setEffort(e.id)}
+                className={`rounded-xl py-3 text-sm font-semibold ${
+                  effort === e.id ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-400'
+                }`}
+              >
+                {e.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {nextStep && (
           <p className="text-center text-sm text-zinc-500">
-            Next: <span className="text-zinc-300">{EXERCISES[nextStep.exerciseId].name}</span>
+            Next: <span className="text-zinc-300">{resolveExercise(nextStep.exerciseId, settings.swaps).name}</span>
           </p>
         )}
       </div>
@@ -122,7 +244,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
           </button>
           <button
             type="button"
-            onClick={() => completeSet(reps, exercise.weighted ? weight : undefined)}
+            onClick={() => completeSet(reps, exercise.weighted ? weight : undefined, effort)}
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-5 text-xl font-bold text-zinc-950 active:scale-[0.98] active:bg-emerald-400"
           >
             <Check className="size-7" strokeWidth={3} />
@@ -145,6 +267,19 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
       )}
     </div>
   );
+}
+
+/** 3-1 tempo: three soft beeps while lowering, a higher beep to press up. */
+function useTempo(enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+    let count = 0;
+    const id = window.setInterval(() => {
+      count = (count % 4) + 1;
+      tempoTick(count === 4);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [enabled]);
 }
 
 type DemoSource = 'video' | 'photos' | 'frames';

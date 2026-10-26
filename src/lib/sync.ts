@@ -4,8 +4,8 @@ import { create } from 'zustand';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { useStore } from './store';
-import { mergeHistory, type CloudSessionRow } from './merge';
-import type { Settings } from './types';
+import { mergeHistory, type CloudRow, type DatedRecord, type MergeResult } from './merge';
+import type { Measurement, Settings, WorkoutSessionLog } from './types';
 
 export type SyncState = 'signed-out' | 'idle' | 'syncing' | 'error';
 
@@ -28,6 +28,30 @@ let rerun = false;
 let applyingRemote = false;
 let debounce: number | undefined;
 
+type Writes = PromiseLike<{ error: unknown }>[];
+
+/** Queues uploads for new local records and tombstones for local deletions. */
+function queueRecordWrites<T extends DatedRecord>(table: string, merged: MergeResult<T>, writes: Writes) {
+  const sb = supabase();
+  if (merged.toUpload.length) {
+    writes.push(
+      sb.from(table).upsert(
+        merged.toUpload.map((r) => ({ id: r.id, data: r, logged_at: r.date, deleted: false })),
+        { onConflict: 'user_id,id' },
+      ),
+    );
+  }
+  if (merged.toDelete.length) {
+    const now = new Date().toISOString();
+    writes.push(
+      sb.from(table).upsert(
+        merged.toDelete.map((id) => ({ id, data: {}, logged_at: now, deleted: true, updated_at: now })),
+        { onConflict: 'user_id,id' },
+      ),
+    );
+  }
+}
+
 /** Two-way sync: pulls cloud history and settings, pushes anything this device has that the cloud lacks. */
 export async function syncNow(): Promise<void> {
   const sb = supabase();
@@ -41,34 +65,25 @@ export async function syncNow(): Promise<void> {
   useSyncStatus.setState({ state: 'syncing', error: null });
 
   try {
-    const [sessionsRes, settingsRes] = await Promise.all([
+    const [sessionsRes, measurementsRes, settingsRes] = await Promise.all([
       sb.from('chestrun_sessions').select('id, data, deleted'),
+      sb.from('chestrun_measurements').select('id, data, deleted'),
       sb.from('chestrun_settings').select('data, updated_at').maybeSingle(),
     ]);
     if (sessionsRes.error) throw sessionsRes.error;
+    if (measurementsRes.error) throw measurementsRes.error;
     if (settingsRes.error) throw settingsRes.error;
+    const cloudSessions = sessionsRes.data as CloudRow<WorkoutSessionLog>[];
+    const cloudMeasurements = measurementsRes.data as CloudRow<Measurement>[];
 
     // Merge against the freshest local state so a workout saved mid-sync isn't lost.
     const local = useStore.getState();
-    const merged = mergeHistory(local.history, local.pendingDeletes, sessionsRes.data as CloudSessionRow[]);
+    const merged = mergeHistory(local.history, local.pendingDeletes, cloudSessions);
+    const mergedMeasurements = mergeHistory(local.measurements, local.pendingMeasurementDeletes, cloudMeasurements);
 
-    const writes: PromiseLike<{ error: unknown }>[] = [];
-    if (merged.toUpload.length) {
-      writes.push(
-        sb.from('chestrun_sessions').upsert(
-          merged.toUpload.map((log) => ({ id: log.id, data: log, logged_at: log.date, deleted: false })),
-          { onConflict: 'user_id,id' },
-        ),
-      );
-    }
-    if (merged.toDelete.length) {
-      writes.push(
-        sb.from('chestrun_sessions').upsert(
-          merged.toDelete.map((id) => ({ id, data: {}, logged_at: new Date().toISOString(), deleted: true, updated_at: new Date().toISOString() })),
-          { onConflict: 'user_id,id' },
-        ),
-      );
-    }
+    const writes: Writes = [];
+    queueRecordWrites('chestrun_sessions', merged, writes);
+    queueRecordWrites('chestrun_measurements', mergedMeasurements, writes);
 
     // Settings: last write wins between this device and the cloud.
     const cloudSettings = settingsRes.data as { data: Settings; updated_at: string } | null;
@@ -88,8 +103,10 @@ export async function syncNow(): Promise<void> {
     applyingRemote = true;
     const now = useStore.getState();
     useStore.setState({
-      history: mergeHistory(now.history, now.pendingDeletes, sessionsRes.data as CloudSessionRow[]).history,
+      history: mergeHistory(now.history, now.pendingDeletes, cloudSessions).history,
       pendingDeletes: now.pendingDeletes.filter((id) => !merged.toDelete.includes(id)),
+      measurements: mergeHistory(now.measurements, now.pendingMeasurementDeletes, cloudMeasurements).history,
+      pendingMeasurementDeletes: now.pendingMeasurementDeletes.filter((id) => !mergedMeasurements.toDelete.includes(id)),
       ...(takeCloudSettings
         ? { settings: { ...now.settings, ...cloudSettings.data }, settingsUpdatedAt: cloudSettingsAt }
         : {}),
@@ -140,7 +157,13 @@ export function startSync() {
   // Push local changes shortly after they happen (saved workout, deletion, settings).
   useStore.subscribe((state, prev) => {
     if (applyingRemote) return;
-    if (state.history !== prev.history || state.pendingDeletes !== prev.pendingDeletes || state.settings !== prev.settings) {
+    if (
+      state.history !== prev.history ||
+      state.pendingDeletes !== prev.pendingDeletes ||
+      state.measurements !== prev.measurements ||
+      state.pendingMeasurementDeletes !== prev.pendingMeasurementDeletes ||
+      state.settings !== prev.settings
+    ) {
       scheduleSync();
     }
   });

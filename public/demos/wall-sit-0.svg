@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360">
+<rect width="800" height="360" fill="#fafafa"/>
+<line x1="20" y1="332" x2="780" y2="332" stroke="#d4d4d8" stroke-width="4"/>
+<text x="24" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#52525b">Slide down the wall</text>
+<rect x="280" y="12" width="20" height="318" fill="#e4e4e7"/>
+<path d="M432 322 L462 328" stroke="#3f3f46" stroke-width="18" stroke-linecap="round" fill="none"/>
+<path d="M432 322 L418 212" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M418 212 L332 196" stroke="#3f3f46" stroke-width="36" stroke-linecap="round" fill="none"/>
+<path d="M332 196 L326 98" stroke="#3f3f46" stroke-width="46" stroke-linecap="round" fill="none"/>
+<circle cx="330" cy="60" r="26" fill="#3f3f46"/>
+<path d="M326 98 L356 160" stroke="#fafafa" stroke-width="32" stroke-linecap="round" fill="none"/>
+<path d="M356 160 L388 196" stroke="#fafafa" stroke-width="28" stroke-linecap="round" fill="none"/>
+<path d="M326 98 L356 160" stroke="#3f3f46" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M356 160 L388 196" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+</svg>

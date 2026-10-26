@@ -11,6 +11,14 @@ npm run dev
 
 Open http://localhost:3000. To test on your phone, run `npm run dev -- -H 0.0.0.0` and open `http://<your-pc-ip>:3000` on the same Wi-Fi.
 
+## Program
+
+- **Workout A / B** (alternating, 3x/week, chest focus with lower-chest bias): two antagonist supersets, a squeeze-focused third superset (floor flyes + band pull-aparts in A; bridge squeeze press + chin-ups in B), then a finisher.
+- **Leg Day** (separate and optional): goblet squat + DB RDL, Bulgarian split squat + calf raise, wall-sit finisher. It doesn't affect the A/B rotation, weekly target, or streak.
+- Every session starts with an optional ~3 minute guided warm-up.
+- **Progression**: each set shows a personal rep target from last session that adapts to what you actually log today, plus a nudge to progress (with a per-exercise ladder of harder variations) once you hit the top of the range.
+- **Swaps** for shoulder-friendly or easier alternatives stick until you swap back; **deload weeks** (half the sets) are suggested every 7 weeks.
+
 ## Features
 
 - **Dashboard**: next workout auto-alternates A/B, weekly progress ring (target 3/week), week streak, recent sessions, resume an in-progress session.

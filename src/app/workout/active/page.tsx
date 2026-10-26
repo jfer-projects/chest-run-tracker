@@ -11,6 +11,21 @@ import { CARDIO_LABEL } from '@/lib/run';
 import { StrengthPlayer } from '@/components/StrengthPlayer';
 import { RunOffer, RunTimer } from '@/components/RunTimer';
 import { SummaryModal } from '@/components/SummaryModal';
+import { WarmupPlayer } from '@/components/WarmupPlayer';
+import type { ActiveSession } from '@/lib/store';
+
+function phaseLabel(active: ActiveSession): string {
+  switch (active.phase) {
+    case 'warmup':
+      return 'Warm-up';
+    case 'run':
+      return CARDIO_LABEL[active.run.mode ?? 'run'].title;
+    case 'run-offer':
+      return 'Cardio';
+    default:
+      return 'Strength';
+  }
+}
 
 export default function ActiveWorkoutPage() {
   const hydrated = useHydrated();
@@ -36,7 +51,7 @@ export default function ActiveWorkoutPage() {
       <header className="sticky top-0 z-10 flex items-center justify-between bg-zinc-950/95 px-4 pt-4 pb-2 backdrop-blur">
         <div>
           <div className="text-sm font-semibold">
-            {template.name} <span className="font-normal text-zinc-500">· {active.phase === 'run' ? CARDIO_LABEL[active.run.mode ?? 'run'].title : active.phase === 'run-offer' ? 'Cardio' : 'Strength'}</span>
+            {template.name} <span className="font-normal text-zinc-500">· {phaseLabel(active)}</span>
           </div>
           <div className="text-xs text-zinc-500 tabular-nums">{formatClock((now - active.startedAt) / 1000)} elapsed</div>
         </div>
@@ -51,6 +66,7 @@ export default function ActiveWorkoutPage() {
           <X className="size-6" />
         </button>
       </header>
+      {active.phase === 'warmup' && <WarmupPlayer session={active} />}
       {active.phase === 'strength' && <StrengthPlayer session={active} />}
       {active.phase === 'run-offer' && <RunOffer session={active} />}
       {active.phase === 'run' && <RunTimer session={active} />}

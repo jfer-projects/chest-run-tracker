@@ -158,6 +158,98 @@ const bridge = { toe: [148, 316], ankle: [200, 308], knee: [265, 164], hip: [410
 const pressTop = { ...bridge, elbow: [586, 196], hand: [586, 110] };
 const pressBottom = { ...bridge, elbow: [530, 314], hand: [530, 234] };
 
+// Lying flat (hips down), knees bent.
+const flat = { toe: [148, 316], ankle: [200, 308], knee: [265, 196], hip: [380, 300], shoulder: [570, 300], head: [632, 296] };
+const flyOpen = { ...flat, elbow: [548, 262], hand: [528, 306] };
+const flyTop = { ...flat, elbow: [572, 220], hand: [572, 138] };
+const squeezeBottom = { ...bridge, elbow: [540, 300], hand: [578, 246] };
+
+const pushupLevel = { ...pushupBottom, shoulder: [505, 282], head: [562, 274], hip: [330, 290], knee: [230, 302] };
+
+// Chin-up: bar overhead, seen end-on.
+const BAR_HIGH = [420, 70];
+const chinHang = {
+  toe: [372, 324], ankle: [384, 316], knee: [432, 298], hip: [412, 258],
+  shoulder: [420, 160], head: [442, 128], elbow: [420, 115], hand: [420, 70],
+};
+const chinTop = {
+  toe: [380, 262], ankle: [392, 256], knee: [440, 238], hip: [420, 196],
+  shoulder: [428, 98], head: [450, 44], elbow: [452, 112], hand: [420, 70],
+};
+
+const reverseFlyUp = { ...hinge, elbow: [486, 132], hand: [500, 120] };
+
+const gobletTop = { ...standing, elbow: [426, 138], hand: [440, 112] };
+const gobletBottom = {
+  toe: [432, 328], ankle: [402, 322], knee: [470, 262], hip: [370, 262],
+  shoulder: [408, 170], head: [424, 134], elbow: [440, 212], hand: [454, 190],
+};
+const rdlTop = { ...standing, elbow: [412, 140], hand: [414, 194] };
+const rdlBottom = {
+  toe: [432, 328], ankle: [402, 322], knee: [412, 258], hip: [358, 190],
+  shoulder: [470, 150], head: [508, 136], elbow: [470, 206], hand: [470, 258],
+};
+// Split squat: back foot up on a chair behind (left). Back leg drawn separately.
+const splitTop = {
+  toe: [462, 328], ankle: [432, 322], knee: [436, 252], hip: [404, 182],
+  shoulder: [406, 84], head: [410, 46], elbow: [408, 140], hand: [410, 194],
+};
+const splitBottom = {
+  toe: [462, 328], ankle: [432, 322], knee: [452, 254], hip: [380, 244],
+  shoulder: [388, 146], head: [392, 108], elbow: [390, 202], hand: [392, 256],
+};
+const lungeBottom = {
+  toe: [470, 328], ankle: [440, 322], knee: [448, 252], hip: [382, 246],
+  shoulder: [388, 148], head: [392, 110], elbow: [390, 204], hand: [392, 258],
+};
+const calfDown = { ...standing, elbow: [412, 140], hand: [414, 194] };
+const calfUp = {
+  toe: [432, 328], ankle: [410, 300], knee: [410, 232], hip: [412, 162],
+  shoulder: [416, 66], head: [420, 30], elbow: [418, 122], hand: [420, 176],
+};
+const wallHalf = {
+  toe: [462, 328], ankle: [432, 322], knee: [418, 212], hip: [332, 196],
+  shoulder: [326, 98], head: [330, 60], elbow: [356, 160], hand: [388, 196],
+};
+const wallHold = {
+  toe: [462, 328], ankle: [432, 322], knee: [432, 236], hip: [332, 236],
+  shoulder: [326, 138], head: [330, 100], elbow: [366, 200], hand: [410, 230],
+};
+
+const legLine = (pts) => pts.slice(1).map((p, i) => line(pts[i], p, i === 0 ? 34 : 30)).join('\n');
+const wall = `<rect x="280" y="12" width="20" height="${F - 12}" fill="#e4e4e7"/>`;
+const pairDumbbells = ([x, y]) => dumbbell([x - 8, y], 22) + dumbbell([x + 8, y], 22);
+
+/** Front-view figure for band pull-aparts. */
+function bandFront(wide) {
+  const cx = 400;
+  const handL = wide ? [272, 112] : [384, 118];
+  const handR = wide ? [528, 112] : [416, 118];
+  const parts = [
+    line([cx - 22, 205], [cx - 30, 324], 30), line([cx + 22, 205], [cx + 30, 324], 30),
+    line([cx, 110], [cx, 200], 60),
+    `<circle cx="${cx}" cy="64" r="28" fill="${BODY}"/>`,
+    line([cx - 40, 104], handL, 22), line([cx + 40, 104], handR, 22),
+    `<path d="M${handL[0]} ${handL[1]} L${handR[0]} ${handR[1]}" stroke="#f97316" stroke-width="7" stroke-linecap="round"/>`,
+  ];
+  return parts.join('\n');
+}
+
+/** Small front-view inset for flyes: arms open wide vs together over the chest. */
+function flyInset(open) {
+  const cx = 715;
+  const cy = 86;
+  const arms = open
+    ? [line([cx - 14, cy], [cx - 46, cy + 6], 7, ACCENT), line([cx + 14, cy], [cx + 46, cy + 6], 7, ACCENT)]
+    : [line([cx - 12, cy], [cx - 4, cy - 36], 7, ACCENT), line([cx + 12, cy], [cx + 4, cy - 36], 7, ACCENT)];
+  return [
+    `<circle cx="${cx}" cy="${cy - 8}" r="58" fill="#ffffff" stroke="#d4d4d8" stroke-width="3"/>`,
+    line([cx, cy], [cx, cy + 34], 22),
+    ...arms,
+    `<text x="${cx}" y="${cy + 72}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="17" font-weight="700" fill="#71717a">${open ? 'ARMS WIDE' : 'SQUEEZE'}</text>`,
+  ].join('\n');
+}
+
 // ---- Scenes ----
 
 const scenes = {
@@ -200,6 +292,68 @@ const scenes = {
   'glute-bridge-floor-press': [
     svg('Press to lockout', scene(pressTop), dumbbell(pressTop.hand, 30), arrow([410, 288], [410, 238], 'HIPS HIGH', [410, 318])),
     svg('Triceps touch floor, pause', scene(pressBottom), dumbbell(pressBottom.hand, 30), arrow([410, 288], [410, 238], 'HIPS HIGH', [410, 318])),
+  ],
+
+  // ---- Added chest / back ----
+  'db-floor-fly': [
+    svg('Wide arc, upper arms touch floor', scene(flyOpen), dumbbell(flyOpen.hand, 22), flyInset(true)),
+    svg('Hug back up, squeeze 1s', scene(flyTop), dumbbell(flyTop.hand, 22), flyInset(false)),
+  ],
+  'bridge-squeeze-press': [
+    svg('Hips up, crush dumbbells together', scene(squeezeBottom), pairDumbbells(squeezeBottom.hand), arrow([410, 288], [410, 238], 'HIPS HIGH', [410, 318])),
+    svg('Press up, keep squeezing', scene(pressTop), pairDumbbells(pressTop.hand), arrow([410, 288], [410, 238], 'HIPS HIGH', [410, 318])),
+  ],
+  'band-pull-apart': [
+    svg('Arms straight, band at shoulder height', bandFront(false)),
+    svg('Pull apart to your chest, squeeze', bandFront(true)),
+  ],
+  'db-reverse-fly': [
+    svg('Hinge, light dumbbells hanging', scene(rowDown), dumbbell(rowDown.hand, 16)),
+    svg('Raise arms out wide, squeeze', scene(reverseFlyUp), dumbbell(reverseFlyUp.hand, 16)),
+  ],
+  'chin-up': [
+    svg('Underhand grip, hang straight', doorBar(BAR_HIGH), scene(chinHang), barEnd(BAR_HIGH)),
+    svg('Chin over the bar', doorBar(BAR_HIGH), scene(chinTop), barEnd(BAR_HIGH)),
+  ],
+
+  // ---- Swaps ----
+  'perfect-pushup-standard': [
+    svg('Chest level with the handles', scene(pushupLevel, handle(520)), rotationInset(false)),
+    svg('Press up and squeeze', scene(pushupTop, handle(520)), rotationInset(true)),
+  ],
+  'close-grip-burnout': [
+    svg('Close grip, reps to failure', scene(closeBottom, handle(520)), rotationInset(false, 12)),
+    svg('Squeeze at the top', scene(pushupTop, handle(520)), rotationInset(true, 12)),
+  ],
+  'chin-up-negative': [
+    svg('Step up: chin over the bar', doorBar(BAR_HIGH), scene(chinTop), barEnd(BAR_HIGH)),
+    svg('Lower slowly, 3-5 seconds', doorBar(BAR_HIGH), scene(chinHang), barEnd(BAR_HIGH), arrow([500, 110], [500, 200], 'SLOW', [540, 160])),
+  ],
+
+  // ---- Leg Day ----
+  'goblet-squat': [
+    svg('Dumbbell at chest, stand tall', scene(gobletTop), dumbbell(gobletTop.hand, 20)),
+    svg('Sit deep, chest up', scene(gobletBottom), dumbbell(gobletBottom.hand, 20)),
+  ],
+  'db-rdl': [
+    svg('Soft knees, dumbbells at thighs', scene(rdlTop), dumbbell(rdlTop.hand, 18)),
+    svg('Hips back, flat back, feel the stretch', scene(rdlBottom), dumbbell(rdlBottom.hand, 18)),
+  ],
+  'bulgarian-split-squat': [
+    svg('Back foot on the chair', chair(150, SEAT, 'left'), legLine([splitTop.hip, [330, 252], [238, 246]]), scene(splitTop), dumbbell(splitTop.hand, 16)),
+    svg('Drop the back knee straight down', chair(150, SEAT, 'left'), legLine([splitBottom.hip, [318, 306], [238, 248]]), scene(splitBottom), dumbbell(splitBottom.hand, 16)),
+  ],
+  'reverse-lunge': [
+    svg('Stand tall', scene(calfDown), dumbbell(calfDown.hand, 16)),
+    svg('Step back, back knee toward floor', legLine([lungeBottom.hip, [316, 316], [244, 318]]), scene(lungeBottom), dumbbell(lungeBottom.hand, 16)),
+  ],
+  'db-calf-raise': [
+    svg('Heels down, full stretch', scene(calfDown), dumbbell(calfDown.hand, 16)),
+    svg('Rise high, pause 1s', scene(calfUp), dumbbell(calfUp.hand, 16)),
+  ],
+  'wall-sit': [
+    svg('Slide down the wall', wall, scene(wallHalf)),
+    svg('Thighs parallel, hold', wall, scene(wallHold)),
   ],
 };
 

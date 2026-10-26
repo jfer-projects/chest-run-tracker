@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { History, Home, Minus, Plus, Settings } from 'lucide-react';
+import { History, Home, Minus, Plus, Settings, TrendingUp } from 'lucide-react';
+import type { WorkoutType } from '@/lib/types';
 
 export function BottomNav() {
   const pathname = usePathname();
   const items = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/history', label: 'History', icon: History },
+    { href: '/progress', label: 'Progress', icon: TrendingUp },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
   return (
@@ -143,12 +145,16 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
   );
 }
 
-export function WorkoutBadge({ type }: { type: 'A' | 'B' }) {
+const BADGE_COLORS: Record<WorkoutType, string> = {
+  A: 'bg-emerald-500/15 text-emerald-400',
+  B: 'bg-amber-500/15 text-amber-400',
+  L: 'bg-violet-500/15 text-violet-400',
+};
+
+export function WorkoutBadge({ type }: { type: WorkoutType }) {
   return (
     <span
-      className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-base font-black ${
-        type === 'A' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
-      }`}
+      className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-base font-black ${BADGE_COLORS[type]}`}
     >
       {type}
     </span>

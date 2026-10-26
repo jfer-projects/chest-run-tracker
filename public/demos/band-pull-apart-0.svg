@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360">
+<rect width="800" height="360" fill="#fafafa"/>
+<line x1="20" y1="332" x2="780" y2="332" stroke="#d4d4d8" stroke-width="4"/>
+<text x="24" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#52525b">Arms straight, band at shoulder height</text>
+<path d="M378 205 L370 324" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M422 205 L430 324" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M400 110 L400 200" stroke="#3f3f46" stroke-width="60" stroke-linecap="round" fill="none"/>
+<circle cx="400" cy="64" r="28" fill="#3f3f46"/>
+<path d="M360 104 L384 118" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+<path d="M440 104 L416 118" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+<path d="M384 118 L416 118" stroke="#f97316" stroke-width="7" stroke-linecap="round"/>
+</svg>

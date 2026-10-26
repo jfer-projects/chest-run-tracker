@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { useHydrated } from '@/lib/hooks';
-import { sessionsInWeek, startOfWeek } from '@/lib/stats';
+import { chestOnly, sessionsInWeek, startOfWeek } from '@/lib/stats';
 import { BottomNav } from '@/components/ui';
 import { SessionCard } from '@/components/SessionCard';
 import type { WorkoutType } from '@/lib/types';
@@ -35,7 +35,7 @@ export default function HistoryPage() {
   const weeks = Array.from({ length: WEEKS_SHOWN }, (_, i) => {
     const start = new Date(thisWeek);
     start.setDate(start.getDate() - (WEEKS_SHOWN - 1 - i) * 7);
-    return { start, count: sessionsInWeek(history, start).length };
+    return { start, count: sessionsInWeek(chestOnly(history), start).length };
   });
 
   return (
@@ -44,7 +44,7 @@ export default function HistoryPage() {
 
       <section className="mb-6 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4">
         <div className="mb-3 flex justify-between text-sm">
-          <span className="font-semibold">Weekly sessions</span>
+          <span className="font-semibold">Weekly chest sessions</span>
           <span className="text-zinc-500">target {settings.weeklyTarget}</span>
         </div>
         <div className="flex h-24 items-end gap-2">
@@ -77,9 +77,9 @@ export default function HistoryPage() {
         ))}
       </div>
       <div className="mb-4 flex gap-2">
-        {(['all', 'A', 'B'] as const).map((t) => (
+        {(['all', 'A', 'B', 'L'] as const).map((t) => (
           <Chip key={t} active={type === t} onClick={() => setType(t)}>
-            {t === 'all' ? 'Both' : `Workout ${t}`}
+            {t === 'all' ? 'All' : t === 'L' ? 'Legs' : `Workout ${t}`}
           </Chip>
         ))}
       </div>

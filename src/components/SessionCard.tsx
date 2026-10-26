@@ -21,8 +21,10 @@ export function SessionCard({
   const [open, setOpen] = useState(false);
   const totals = sessionTotals(log);
   const template = WORKOUTS[log.workoutType];
-  // Show exercises in template order rather than object-key order.
-  const order = template.blocks.flatMap((b) => b.exercises).filter((id) => log.sets[id]?.length);
+  // Show exercises in template order (swaps sit where the original would), rather than object-key order.
+  const order = [
+    ...new Set(template.blocks.flatMap((b) => b.exercises).flatMap((id) => [id, ...(EXERCISES[id].swaps ?? [])])),
+  ].filter((id) => log.sets[id]?.length);
 
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60">

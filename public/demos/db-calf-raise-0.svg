@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360">
+<rect width="800" height="360" fill="#fafafa"/>
+<line x1="20" y1="332" x2="780" y2="332" stroke="#d4d4d8" stroke-width="4"/>
+<text x="24" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#52525b">Heels down, full stretch</text>
+<path d="M402 322 L432 328" stroke="#3f3f46" stroke-width="18" stroke-linecap="round" fill="none"/>
+<path d="M402 322 L404 252" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M404 252 L406 182" stroke="#3f3f46" stroke-width="36" stroke-linecap="round" fill="none"/>
+<path d="M406 182 L410 84" stroke="#3f3f46" stroke-width="46" stroke-linecap="round" fill="none"/>
+<circle cx="414" cy="46" r="26" fill="#3f3f46"/>
+<path d="M410 84 L412 140" stroke="#fafafa" stroke-width="32" stroke-linecap="round" fill="none"/>
+<path d="M412 140 L414 194" stroke="#fafafa" stroke-width="28" stroke-linecap="round" fill="none"/>
+<path d="M410 84 L412 140" stroke="#3f3f46" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M412 140 L414 194" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+<circle cx="414" cy="194" r="16" fill="#10b981"/><circle cx="414" cy="194" r="6.08" fill="#065f46"/>
+</svg>
