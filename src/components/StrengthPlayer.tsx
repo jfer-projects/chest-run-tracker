@@ -61,7 +61,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
       : 'border-zinc-800 bg-zinc-900/60 text-zinc-300';
 
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] flex-col">
+    <div className="flex flex-1 flex-col">
       <div className="px-4 pt-2">
         <div className="mb-1 flex justify-between text-xs text-zinc-500">
           <span>

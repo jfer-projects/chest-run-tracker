@@ -31,7 +31,7 @@ export function WarmupPlayer({ session }: { session: ActiveSession }) {
   }, [index, remaining, nextWarmup]);
 
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] flex-col px-4 pt-2">
+    <div className="flex flex-1 flex-col px-4 pt-2">
       <div className="flex h-1.5 gap-1">
         {steps.map((s, i) => (
           <div key={s.name} className={`flex-1 rounded-full ${i < index ? 'bg-orange-400' : i === index ? 'bg-orange-300' : 'bg-zinc-800'}`} />

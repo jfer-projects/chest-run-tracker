@@ -25,7 +25,7 @@ export function RunOffer({ session }: { session: ActiveSession }) {
     startRun(mode);
   };
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center px-6 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
       <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-emerald-500/15">
         <CardioIcon mode={preferred} className="size-10 text-emerald-400" />
       </div>
@@ -100,7 +100,7 @@ export function RunTimer({ session }: { session: ActiveSession }) {
   const nextPhase = RUN_PHASES[idx + 1];
 
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] flex-col px-4 pt-2">
+    <div className="flex flex-1 flex-col px-4 pt-2">
       {/* Segmented 20-min bar */}
       <div className="flex h-3 gap-1">
         {RUN_PHASES.map((p) => {

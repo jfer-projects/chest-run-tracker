@@ -47,7 +47,7 @@ export default function ActiveWorkoutPage() {
   const template = WORKOUTS[active.workoutType];
 
   return (
-    <main>
+    <main className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-zinc-950/95 px-4 pt-safe-sm pb-2 backdrop-blur">
         <div>
           <div className="text-sm font-semibold">
