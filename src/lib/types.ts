@@ -33,8 +33,8 @@ export interface ExerciseMedia {
    * Anything that fails to load falls through to the next option.
    */
   video?: string;
-  /** Start / end position photos (real or AI-generated) that alternate like the drawings. */
-  photos?: [string, string];
+  /** Start / end position photos (real or AI-generated) that alternate like the drawings, or one still. */
+  photos?: [string] | [string, string];
   credit?: MediaCredit;
   /** Bundled drawings (scripts/generate-demos.mjs): the always-available fallback. */
   frames: [string, string];

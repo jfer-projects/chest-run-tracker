@@ -220,7 +220,7 @@ function DemoFrames({
   onFail,
   dark = false,
 }: {
-  frames: [string, string];
+  frames: [string] | [string, string];
   badge: string;
   paused: boolean;
   onFail?: () => void;
@@ -228,11 +228,12 @@ function DemoFrames({
 }) {
   const [frame, setFrame] = useState(0);
   const [failed, setFailed] = useState(false);
+  const animated = frames.length > 1;
   useEffect(() => {
-    if (paused) return;
+    if (paused || !animated) return;
     const id = window.setInterval(() => setFrame((f) => 1 - f), 1250);
     return () => window.clearInterval(id);
-  }, [paused]);
+  }, [paused, animated]);
 
   // If a frame fails to load, hand off to the next source, or drop the demo rather than show a broken box.
   if (failed) return null;
@@ -253,11 +254,13 @@ function DemoFrames({
       <span className="absolute top-2 right-2 rounded-full bg-zinc-900/90 px-3 py-1 text-xs font-semibold text-emerald-400">
         {badge}
       </span>
-      <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-zinc-900/80 px-2 py-1">
-        {[0, 1].map((i) => (
-          <span key={i} className={`h-1.5 w-3.5 rounded-full ${frame === i ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-        ))}
-      </div>
+      {animated && (
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-zinc-900/80 px-2 py-1">
+          {[0, 1].map((i) => (
+            <span key={i} className={`h-1.5 w-3.5 rounded-full ${frame === i ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

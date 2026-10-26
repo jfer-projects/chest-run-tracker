@@ -185,7 +185,11 @@ export const EXERCISES: Record<ExerciseId, ExerciseDefinition> = {
       'Press straight down through your palms; lock out and hold the top 2 seconds each rep',
     ],
     anatomicalTip: 'Downward shoulder extension gives a final burnout to the lower pec perimeter.',
-    media: demo('bench-dips', 'Finisher Burnout'),
+    media: {
+      ...demo('bench-dips', 'Finisher Burnout'),
+      photos: ['/demos/photos/bench-dips.jpg'],
+      credit: { text: 'Photo: Gustavo Fring / Pexels', url: 'https://www.pexels.com/photo/6496123/' },
+    },
   },
 };
 
