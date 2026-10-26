@@ -22,8 +22,21 @@ export interface SetLog {
   completed: boolean;
 }
 
+export interface MediaCredit {
+  text: string; // e.g. "Photo: Jane Doe / Pexels" or "AI-generated"
+  url?: string;
+}
+
 export interface ExerciseMedia {
-  /** Two still frames (start / end position) that alternate as a simple demo animation. */
+  /**
+   * Preferred demo, in order: video loop, then photo pair, then the bundled drawings.
+   * Anything that fails to load falls through to the next option.
+   */
+  video?: string;
+  /** Start / end position photos (real or AI-generated) that alternate like the drawings. */
+  photos?: [string, string];
+  credit?: MediaCredit;
+  /** Bundled drawings (scripts/generate-demos.mjs): the always-available fallback. */
   frames: [string, string];
   badge: string;
 }

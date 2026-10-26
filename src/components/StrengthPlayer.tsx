@@ -7,6 +7,7 @@ import { useNow } from '@/lib/hooks';
 import { EXERCISES, WORKOUTS, buildSteps, defaultReps } from '@/lib/workouts';
 import { countdownDone, countdownTick } from '@/lib/cues';
 import { formatClock } from '@/lib/format';
+import type { ExerciseDefinition } from '@/lib/types';
 import { ProgressRing, Stepper } from './ui';
 
 export function StrengthPlayer({ session }: { session: ActiveSession }) {
@@ -73,7 +74,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
           )}
         </div>
 
-        <DemoFrames key={exercise.id} frames={exercise.media.frames} badge={exercise.media.badge} paused={!!session.restEndsAt} />
+        <ExerciseDemo key={exercise.id} exercise={exercise} paused={!!session.restEndsAt} />
 
         <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
           <ul className="space-y-2">
@@ -144,8 +145,87 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
   );
 }
 
+type DemoSource = 'video' | 'photos' | 'frames';
+
+/** Shows the best available demo: video loop, then photo pair, then the bundled drawings. */
+function ExerciseDemo({ exercise, paused }: { exercise: ExerciseDefinition; paused: boolean }) {
+  const { media } = exercise;
+  const sources: DemoSource[] = [
+    ...(media.video ? (['video'] as const) : []),
+    ...(media.photos ? (['photos'] as const) : []),
+    'frames',
+  ];
+  const [index, setIndex] = useState(0);
+  const source = sources[Math.min(index, sources.length - 1)];
+  const fallBack = () => setIndex((i) => i + 1);
+  // Credit belongs to the sourced media, not to the drawings.
+  const credit = source !== 'frames' ? media.credit : undefined;
+
+  return (
+    <div>
+      {source === 'video' && <DemoVideo src={media.video!} badge={media.badge} paused={paused} onFail={fallBack} />}
+      {source === 'photos' && (
+        <DemoFrames frames={media.photos!} badge={media.badge} paused={paused} onFail={fallBack} dark />
+      )}
+      {source === 'frames' && <DemoFrames frames={media.frames} badge={media.badge} paused={paused} />}
+      {credit && (
+        <p className="mt-1 text-right text-[11px] text-zinc-600">
+          {credit.url ? (
+            <a href={credit.url} target="_blank" rel="noreferrer" className="underline">
+              {credit.text}
+            </a>
+          ) : (
+            credit.text
+          )}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function DemoVideo({ src, badge, paused, onFail }: { src: string; badge: string; paused: boolean; onFail: () => void }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (paused) v.pause();
+    else void v.play().catch(() => {});
+  }, [paused]);
+
+  return (
+    <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-black">
+      <video
+        ref={ref}
+        src={src}
+        autoPlay={!paused}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        onError={onFail}
+        className="h-full w-full object-contain"
+      />
+      <span className="absolute top-2 right-2 rounded-full bg-zinc-900/90 px-3 py-1 text-xs font-semibold text-emerald-400">
+        {badge}
+      </span>
+    </div>
+  );
+}
+
 /** Alternates start/end position stills as a lightweight demo animation. */
-function DemoFrames({ frames, badge, paused }: { frames: [string, string]; badge: string; paused: boolean }) {
+function DemoFrames({
+  frames,
+  badge,
+  paused,
+  onFail,
+  dark = false,
+}: {
+  frames: [string, string];
+  badge: string;
+  paused: boolean;
+  onFail?: () => void;
+  dark?: boolean;
+}) {
   const [frame, setFrame] = useState(0);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -154,17 +234,19 @@ function DemoFrames({ frames, badge, paused }: { frames: [string, string]; badge
     return () => window.clearInterval(id);
   }, [paused]);
 
-  // If a frame fails to load, drop the demo rather than show a broken box.
+  // If a frame fails to load, hand off to the next source, or drop the demo rather than show a broken box.
   if (failed) return null;
   return (
-    <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-white">
+    <div
+      className={`relative flex h-52 items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 ${dark ? 'bg-zinc-950' : 'bg-white'}`}
+    >
       {frames.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           key={src}
           src={src}
           alt={i === 0 ? 'Start position' : 'End position'}
-          onError={() => setFailed(true)}
+          onError={() => (onFail ? onFail() : setFailed(true))}
           className={`absolute h-full w-full object-contain transition-opacity duration-300 ${frame === i ? 'opacity-100' : 'opacity-0'}`}
         />
       ))}
