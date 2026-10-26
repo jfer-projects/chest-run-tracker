@@ -39,7 +39,7 @@ export default function HistoryPage() {
   });
 
   return (
-    <main className="px-4 pt-6 pb-28">
+    <main className="px-4 pt-safe pb-28">
       <h1 className="mb-5 text-2xl font-bold tracking-tight">History</h1>
 
       <section className="mb-6 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4">

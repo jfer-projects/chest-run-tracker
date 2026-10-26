@@ -41,7 +41,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="space-y-6 px-4 pt-6 pb-28">
+    <main className="space-y-6 px-4 pt-safe pb-28">
       <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
 
       <section className="space-y-3">

@@ -48,7 +48,7 @@ export default function ActiveWorkoutPage() {
 
   return (
     <main>
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-zinc-950/95 px-4 pt-4 pb-2 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-zinc-950/95 px-4 pt-safe-sm pb-2 backdrop-blur">
         <div>
           <div className="text-sm font-semibold">
             {template.name} <span className="font-normal text-zinc-500">· {phaseLabel(active)}</span>

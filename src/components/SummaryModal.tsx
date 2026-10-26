@@ -26,7 +26,7 @@ export function SummaryModal({ session }: { session: ActiveSession }) {
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col px-5 pt-10">
+    <div className="flex min-h-dvh flex-col px-5 pt-safe-lg">
       <div className="text-center">
         <div className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full bg-amber-500/15">
           <Trophy className="size-10 text-amber-400" />

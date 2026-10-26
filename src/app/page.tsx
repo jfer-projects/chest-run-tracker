@@ -38,7 +38,7 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="px-4 pt-6 pb-28">
+    <main className="px-4 pt-safe pb-28">
       <header className="mb-6 flex items-center justify-between">
         <div>
           <p className="text-sm text-zinc-500">

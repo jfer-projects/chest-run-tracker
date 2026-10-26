@@ -26,6 +26,24 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/*
+ * Safe areas. Browsers and PWAs report them through env(); the Android app (Capacitor) injects
+ * --safe-area-inset-* instead. Taking the larger of the two works for both.
+ */
+:root {
+  --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+}
+
 .pb-safe {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-bottom: max(1rem, var(--sab));
+}
+.pt-safe {
+  padding-top: calc(1.5rem + var(--sat));
+}
+.pt-safe-sm {
+  padding-top: calc(1rem + var(--sat));
+}
+.pt-safe-lg {
+  padding-top: calc(2.5rem + var(--sat));
 }
