@@ -76,10 +76,16 @@ export function lastSetsFor(history: WorkoutSessionLog[], id: ExerciseId): { dat
   return null;
 }
 
-export function formatSets(exercise: ExerciseDefinition, sets: SetLog[]): string {
+/** "12 · 12 · 11" and "@ 35 lb" as separate pieces, so layouts can stack them. */
+export function setsSummary(exercise: ExerciseDefinition, sets: SetLog[]): { reps: string; weight: string | null } {
   const reps = sets.map((s) => `${s.completedReps ?? '–'}${exercise.unit === 'seconds' ? 's' : ''}`).join(' · ');
   const weights = [...new Set(sets.map((s) => s.weightLbs).filter(Boolean))];
-  return weights.length ? `${reps} @ ${weights.join('/')} lb` : reps;
+  return { reps, weight: weights.length ? `@ ${weights.join('/')} lb` : null };
+}
+
+export function formatSets(exercise: ExerciseDefinition, sets: SetLog[]): string {
+  const { reps, weight } = setsSummary(exercise, sets);
+  return weight ? `${reps} ${weight}` : reps;
 }
 
 export interface Advice {
@@ -100,9 +106,9 @@ export function progressionAdvice(exercise: ExerciseDefinition, last: SetLog[] |
   }
   const hitTop = last.every((s) => (s.completedReps ?? 0) >= top);
   const allMax = last.every((s) => s.effort === 'max');
-  if (hitTop && !allMax) return { tone: 'progress', text: `You hit ${top} on every set. Progress: ${exercise.progressions[0]}` };
-  if (hitTop) return { tone: 'repeat', text: `Top of the range, but it was max effort. Repeat this and own it, then: ${exercise.progressions[0]}` };
-  return { tone: 'repeat', text: `Aim for ${top} on every set before progressing` };
+  if (hitTop && !allMax) return { tone: 'progress', text: `You hit ${top} on every set. Level up: ${exercise.progressions[0]}.` };
+  if (hitTop) return { tone: 'repeat', text: `All ${top}s, but at max effort. Repeat it, then level up.` };
+  return null; // Today's target already says what to aim for.
 }
 
 /**
@@ -160,4 +166,35 @@ export function exerciseSeries(history: WorkoutSessionLog[], id: ExerciseId): Ex
     });
   }
   return out.reverse();
+}
+
+export interface RecordHit {
+  id: ExerciseId;
+  kind: 'weight' | 'reps' | 'hold';
+  now: number;
+  before: number;
+}
+
+/**
+ * Personal records set in a session that hasn't been saved yet. An exercise needs earlier history to count,
+ * so the very first time you do something isn't called a record.
+ */
+export function findRecords(history: WorkoutSessionLog[], sets: WorkoutSessionLog['sets']): RecordHit[] {
+  const hits: RecordHit[] = [];
+  for (const [rawId, logs] of Object.entries(sets)) {
+    const id = rawId as ExerciseId;
+    const done = (logs ?? []).filter((s) => s?.completed);
+    const prior = exerciseSeries(history, id);
+    if (!done.length || !prior.length) continue;
+    const ex = EXERCISES[id];
+    const repsNow = Math.max(...done.map((s) => s.completedReps ?? 0));
+    const weightNow = Math.max(0, ...done.map((s) => s.weightLbs ?? 0));
+    const repsBefore = Math.max(...prior.map((p) => p.bestReps));
+    const weightBefore = Math.max(...prior.map((p) => p.bestWeight));
+    if (ex.weighted && weightNow > weightBefore) hits.push({ id, kind: 'weight', now: weightNow, before: weightBefore });
+    else if (repsNow > repsBefore && (!ex.weighted || weightNow >= weightBefore)) {
+      hits.push({ id, kind: ex.unit === 'seconds' ? 'hold' : 'reps', now: repsNow, before: repsBefore });
+    }
+  }
+  return hits;
 }

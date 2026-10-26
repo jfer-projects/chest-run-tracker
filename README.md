@@ -29,6 +29,17 @@ Open http://localhost:3000. To test on your phone, run `npm run dev -- -H 0.0.0.
 
 Everything is stored in `localStorage` first, so the app works offline. Signing in (Settings → Cloud backup, using a MealApp account) syncs history and settings to the MealApp Supabase project's `chestrun_sessions` / `chestrun_settings` tables, which are row-level-secured per user. Sync runs on sign-in, after each change, when the app regains focus, and when the device comes back online. Deletions sync as tombstones so they don't reappear from another device. Timers use timestamps, so they stay accurate across refreshes and background tabs, and the screen is kept awake during workouts where the browser supports it.
 
+## Design notes
+
+Designed for use mid-workout: sweaty hands, glancing at a phone propped on the floor.
+
+- **Glanceable workout screen:** pair label (1A / 1B), big rep target and last-time card first, then the demo and one key cue. Everything else (more cues, tips, ways to level up) is one tap away. Rare actions (tempo beeps, skip, finish, discard) live behind the ... menu.
+- **Logging is pinned:** reps and weight steppers and Complete set sit at the bottom, in thumb reach. How a set felt (Easy / Solid / Max) is rated on the rest screen, where it also updates the next target.
+- **Rest is preparation:** full-screen countdown plus the next exercise (picture, target, last time), and Edit to fix a mis-tapped set.
+- **Tokens** live in `src/app/globals.css` (`@theme`): `page < surface < raised < line` for surfaces and a `muted` text colour that keeps at least 5:1 contrast (6.2:1 on the page). Do not use `zinc-500` or darker for text.
+- **Tap targets are at least 44 px**, everything interactive has an accessible name, timers use `role="timer"`, animations respect `prefers-reduced-motion`, and taps give a short haptic.
+- **Safe areas:** `pt-safe`, `pb-safe` and friends use `--sat` / `--sab`, which take the larger of the browser's `env()` insets and the ones the Android app injects.
+
 ## Structure
 
 ```

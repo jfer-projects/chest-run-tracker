@@ -8,7 +8,8 @@ import { EXERCISES, WORKOUTS } from '@/lib/workouts';
 import { exerciseSeries } from '@/lib/stats';
 import { formatDate } from '@/lib/format';
 import { addPhoto, deletePhoto, listPhotos, type ProgressPhoto } from '@/lib/photos';
-import { BottomNav } from '@/components/ui';
+import { BottomNav, Segmented } from '@/components/ui';
+import { CoachNotes } from '@/components/CoachNotes';
 import { LineChart } from '@/components/LineChart';
 import type { ExerciseId, Measurement } from '@/lib/types';
 
@@ -27,11 +28,12 @@ export default function ProgressPage() {
   const hydrated = useHydrated();
   if (!hydrated) return <div className="min-h-dvh" />;
   return (
-    <main className="space-y-6 px-4 pt-safe pb-28">
-      <h1 className="text-2xl font-bold tracking-tight">Progress</h1>
+    <main className="animate-rise space-y-4 px-4 pt-safe pb-28">
+      <h1 className="text-2xl font-black tracking-tight">Progress</h1>
       <ExerciseProgress />
       <BodyTracking />
       <Photos />
+      <CoachNotes />
       <BottomNav />
     </main>
   );
@@ -42,11 +44,12 @@ function ExerciseProgress() {
   const logged = PROGRAM_ORDER.filter((id) => history.some((h) => h.sets[id]?.some((s) => s?.completed)));
   const [id, setId] = useState<ExerciseId | null>(null);
   const [metric, setMetric] = useState<'best' | 'volume'>('best');
+  const [showAll, setShowAll] = useState(false);
   const current = id && logged.includes(id) ? id : logged[0];
 
   if (!current) {
     return (
-      <section className="rounded-3xl border border-dashed border-zinc-800 p-6 text-center text-sm text-zinc-500">
+      <section className="rounded-3xl border border-dashed border-line p-6 text-center text-sm text-muted">
         Exercise charts and personal records show up after your first logged workout.
       </section>
     );
@@ -65,12 +68,13 @@ function ExerciseProgress() {
   const prVolume = Math.max(...series.map((p) => p.volume));
 
   return (
-    <section className="space-y-3 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="font-semibold">Exercises</h2>
+    <section className="space-y-3 rounded-3xl bg-surface p-4 ring-1 ring-line">
+      <h2 className="font-bold">Exercises</h2>
       <select
         value={current}
+        aria-label="Exercise"
         onChange={(e) => setId(e.target.value as ExerciseId)}
-        className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-zinc-100"
+        className="min-h-12 w-full rounded-xl bg-raised px-3 text-zinc-100 ring-1 ring-line"
       >
         {logged.map((x) => (
           <option key={x} value={x}>
@@ -79,37 +83,46 @@ function ExerciseProgress() {
         ))}
       </select>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className={`grid gap-2 ${ex.weighted ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <Pr label={seconds ? 'Longest hold' : 'Most reps'} value={`${prReps}${seconds ? 's' : ''}`} />
-        <Pr label="Heaviest" value={prWeight ? `${prWeight} lb` : '–'} />
+        {ex.weighted && <Pr label="Heaviest" value={prWeight ? `${prWeight} lb` : '–'} />}
         <Pr label="Best session" value={`${prVolume.toLocaleString()}${volumeUnit}`} />
       </div>
 
-      <div className="flex gap-2">
-        {(['best', 'volume'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMetric(m)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium ${metric === m ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-400'}`}
-          >
-            {m === 'best' ? (ex.weighted ? 'Heaviest weight' : seconds ? 'Longest hold' : 'Best set') : 'Session total'}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        label="Chart"
+        value={metric}
+        onChange={setMetric}
+        options={[
+          { id: 'best', label: ex.weighted ? 'Heaviest weight' : seconds ? 'Longest hold' : 'Best set' },
+          { id: 'volume', label: 'Session total' },
+        ]}
+      />
       <LineChart points={metric === 'best' ? best : volume} unit={metric === 'best' ? bestUnit : volumeUnit} />
 
-      <div className="max-h-48 space-y-1 overflow-y-auto text-sm">
-        {[...series].reverse().map((p) => (
-          <div key={p.date} className="flex justify-between border-b border-zinc-800/60 py-1.5 text-zinc-400">
-            <span>{formatDate(p.date)}</span>
-            <span className="text-zinc-200">
-              best {p.bestReps}
-              {seconds ? 's' : ''}
-              {p.bestWeight ? ` @ ${p.bestWeight} lb` : ''} · total {p.volume.toLocaleString()}
-            </span>
-          </div>
-        ))}
+      <div className="text-sm">
+        {[...series]
+          .reverse()
+          .slice(0, showAll ? undefined : 5)
+          .map((p) => (
+            <div key={p.date} className="flex justify-between gap-3 border-b border-line py-2 text-zinc-300">
+              <span className="shrink-0">{formatDate(p.date)}</span>
+              <span className="num text-right text-zinc-200">
+                best {p.bestReps}
+                {seconds ? 's' : ''}
+                {p.bestWeight ? ` @ ${p.bestWeight} lb` : ''} · total {p.volume.toLocaleString()}
+              </span>
+            </div>
+          ))}
+        {series.length > 5 && (
+          <button
+            type="button"
+            onClick={() => setShowAll((a) => !a)}
+            className="press min-h-11 w-full text-sm font-semibold text-emerald-400"
+          >
+            {showAll ? 'Show fewer' : `Show all ${series.length} sessions`}
+          </button>
+        )}
       </div>
     </section>
   );
@@ -117,10 +130,10 @@ function ExerciseProgress() {
 
 function Pr({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-zinc-950 p-3 text-center">
-      <Trophy className="mx-auto mb-1 size-4 text-amber-400" />
-      <div className="text-lg font-black">{value}</div>
-      <div className="text-[10px] tracking-wider text-zinc-500 uppercase">{label}</div>
+    <div className="rounded-2xl bg-raised p-3 text-center">
+      <Trophy className="mx-auto mb-1 size-4 text-amber-400" aria-hidden="true" />
+      <div className="num text-lg font-black">{value}</div>
+      <div className="text-[10px] tracking-wider text-muted uppercase">{label}</div>
     </div>
   );
 }
@@ -144,9 +157,9 @@ function BodyTracking() {
     .map((m) => ({ label: shortDate(m.date), t: Date.parse(m.date), value: m[metric] as number }));
 
   return (
-    <section className="space-y-3 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="font-semibold">Body</h2>
-      <p className="text-sm text-zinc-500">
+    <section className="space-y-3 rounded-3xl bg-surface p-4 ring-1 ring-line">
+      <h2 className="font-bold">Body</h2>
+      <p className="text-sm text-muted">
         Measure monthly, same time of day. Chest: around the nipples, arms down. Waist: at the navel, relaxed.
       </p>
       <form
@@ -161,7 +174,7 @@ function BodyTracking() {
         }}
       >
         {BODY_FIELDS.map((f) => (
-          <label key={f.key} className="text-xs text-zinc-500">
+          <label key={f.key} className="text-xs text-muted">
             {f.label} ({f.unit.trim()})
             <input
               type="number"
@@ -169,45 +182,44 @@ function BodyTracking() {
               step="0.1"
               value={form[f.key]}
               onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-base text-zinc-100 outline-none focus:border-emerald-500"
+              className="mt-1 w-full rounded-xl bg-raised px-3 py-2.5 text-base text-zinc-100 ring-1 ring-line outline-none focus:ring-emerald-500"
             />
           </label>
         ))}
-        <button type="submit" className="col-span-3 rounded-xl bg-emerald-500 py-3 font-bold text-zinc-950">
+        <button type="submit" className="col-span-3 press min-h-12 rounded-xl bg-emerald-500 font-bold text-zinc-950">
           Log measurement
         </button>
       </form>
 
       {measurements.length > 0 && (
         <>
-          <div className="flex gap-2">
-            {BODY_FIELDS.map((f) => (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => setMetric(f.key)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium ${metric === f.key ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-400'}`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            label="Measurement"
+            value={metric}
+            onChange={setMetric}
+            options={BODY_FIELDS.map((f) => ({ id: f.key, label: f.label }))}
+          />
           {points.length > 0 ? (
             <LineChart points={points} unit={field.unit} />
           ) : (
-            <p className="text-sm text-zinc-500">No {field.label.toLowerCase()} entries yet.</p>
+            <p className="text-sm text-muted">No {field.label.toLowerCase()} entries yet.</p>
           )}
           <div className="space-y-1 text-sm">
             {measurements.map((m) => (
-              <div key={m.id} className="flex items-center gap-2 border-b border-zinc-800/60 py-1.5 text-zinc-400">
+              <div key={m.id} className="flex items-center gap-2 border-b border-line py-2 text-zinc-300">
                 <span className="w-24 shrink-0">{formatDate(m.date)}</span>
                 <span className="flex-1 text-zinc-200">
                   {BODY_FIELDS.filter((f) => m[f.key] !== undefined)
                     .map((f) => `${f.label} ${m[f.key]}${f.unit}`)
                     .join(' · ')}
                 </span>
-                <button type="button" aria-label="Delete measurement" onClick={() => deleteMeasurement(m.id)}>
-                  <Trash2 className="size-4 text-zinc-600" />
+                <button
+                  type="button"
+                  aria-label={`Delete measurement from ${formatDate(m.date)}`}
+                  onClick={() => deleteMeasurement(m.id)}
+                  className="press -mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-muted"
+                >
+                  <Trash2 className="size-4" aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -230,13 +242,13 @@ function Photos() {
   }, []);
 
   return (
-    <section className="space-y-3 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="font-semibold">Photos</h2>
-      <p className="text-sm text-zinc-500">
+    <section className="space-y-3 rounded-3xl bg-surface p-4 ring-1 ring-line">
+      <h2 className="font-bold">Photos</h2>
+      <p className="text-sm text-muted">
         Monthly front and side photos, same lighting, are the honest way to judge the lower chest. These stay on this
         device only and are never uploaded.
       </p>
-      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-800 py-3 font-medium text-zinc-200">
+      <label className="press flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-raised font-semibold text-zinc-200 ring-1 ring-line">
         <Camera className="size-5" /> Add photo
         <input
           type="file"
@@ -263,13 +275,13 @@ function Photos() {
             <button key={p.id} type="button" onClick={() => setViewing(p)} className="relative overflow-hidden rounded-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={urls.get(p.id)} alt={`Progress photo ${formatDate(p.date)}`} className="aspect-[3/4] w-full object-cover" />
-              <span className="absolute inset-x-0 bottom-0 bg-zinc-950/70 py-0.5 text-[10px] text-zinc-200">{shortDate(p.date)}</span>
+              <span className="absolute inset-x-0 bottom-0 bg-black/70 py-0.5 text-[11px] text-zinc-100">{shortDate(p.date)}</span>
             </button>
           ))}
         </div>
       )}
       {viewing && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-zinc-950/95 p-4" onClick={() => setViewing(null)}>
+        <div className="fixed inset-0 z-40 flex flex-col bg-page/95 p-4" onClick={() => setViewing(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={urls.get(viewing.id)} alt="Progress photo" className="min-h-0 flex-1 object-contain" />
           <div className="flex items-center justify-between pt-3 text-sm text-zinc-400">

@@ -45,6 +45,16 @@ export function vibrate(pattern: number | number[]) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(pattern);
 }
 
+/** Tiny haptic acknowledgement for taps on steppers and toggles (no sound). */
+export function tap() {
+  vibrate(8);
+}
+
+/** Firmer haptic for logging a set. */
+export function confirmTap() {
+  vibrate(28);
+}
+
 /** 3-2-1 ticks. */
 export function countdownTick() {
   tone(880, 120);

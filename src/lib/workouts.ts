@@ -573,3 +573,18 @@ export function topReps(exercise: ExerciseDefinition): number | null {
 export function warmupFor(type: WorkoutType): WarmupStep[] {
   return type === 'L' ? WARMUPS.legs : WARMUPS.chest;
 }
+
+/** Rough session length in minutes: ~40s per set plus the configured switches and rests (and the warm-up). */
+export function estimateMinutes(
+  type: WorkoutType,
+  opts: { deload: boolean; warmup: boolean; transitionSeconds: number; swaps: Partial<Record<ExerciseId, ExerciseId>> },
+): number {
+  const steps = buildSteps(type, opts.deload);
+  let seconds = opts.warmup ? WARMUPS[type === 'L' ? 'legs' : 'chest'].reduce((n, w) => n + w.seconds, 0) : 0;
+  steps.forEach((step, i) => {
+    const next = steps[i + 1];
+    const midPair = !!next && next.blockIndex === step.blockIndex && next.round === step.round;
+    seconds += 40 + (midPair ? opts.transitionSeconds : next ? resolveExercise(step.exerciseId, opts.swaps).defaultRest : 0);
+  });
+  return Math.round(seconds / 60);
+}

@@ -9,6 +9,8 @@ import { countdownDone, countdownTick } from '@/lib/cues';
 import { formatClock } from '@/lib/format';
 import { ProgressRing } from './ui';
 
+const ORANGE = '#fb923c';
+
 export function WarmupPlayer({ session }: { session: ActiveSession }) {
   const { nextWarmup, skipWarmup } = useStore();
   const steps = warmupFor(session.workoutType);
@@ -31,41 +33,55 @@ export function WarmupPlayer({ session }: { session: ActiveSession }) {
   }, [index, remaining, nextWarmup]);
 
   return (
-    <div className="flex flex-1 flex-col px-4 pt-2">
-      <div className="flex h-1.5 gap-1">
+    <div
+      className="flex flex-1 flex-col px-4 pt-2"
+      style={{ background: `radial-gradient(120% 55% at 50% 38%, ${ORANGE}1c, transparent 70%)` }}
+    >
+      <div
+        className="flex gap-1.5"
+        role="progressbar"
+        aria-label="Warm-up progress"
+        aria-valuemin={1}
+        aria-valuemax={steps.length}
+        aria-valuenow={index + 1}
+      >
         {steps.map((s, i) => (
-          <div key={s.name} className={`flex-1 rounded-full ${i < index ? 'bg-orange-400' : i === index ? 'bg-orange-300' : 'bg-zinc-800'}`} />
+          <div key={s.name} className={`h-1.5 flex-1 rounded-full ${i < index ? 'bg-orange-400' : i === index ? 'bg-orange-300' : 'bg-line'}`} />
         ))}
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center text-center">
-        <span className="flex items-center gap-1.5 rounded-full bg-orange-500/15 px-4 py-1.5 text-sm font-bold tracking-wider text-orange-400 uppercase">
-          <Flame className="size-4" /> Warm-up {index + 1} of {steps.length}
+      <div key={index} className="animate-rise flex flex-1 flex-col items-center justify-center text-center">
+        <span className="flex items-center gap-1.5 rounded-full bg-orange-500/15 px-4 py-1.5 text-xs font-bold tracking-wider text-orange-300 uppercase">
+          <Flame className="size-4" aria-hidden="true" /> Warm-up {index + 1} of {steps.length}
         </span>
-        <h2 className="mt-4 text-3xl font-bold">{step.name}</h2>
-        <p className="mt-2 max-w-xs text-lg text-zinc-300">{step.cue}</p>
-        <div className="my-8">
-          <ProgressRing value={remaining} max={step.seconds} size={220} stroke={14} color="#fb923c">
-            <span className="text-7xl font-black tabular-nums">{formatClock(remaining)}</span>
+        <h2 className="mt-4 text-3xl font-black tracking-tight">{step.name}</h2>
+        <p className="mt-2 max-w-xs text-lg leading-snug text-zinc-300">{step.cue}</p>
+        <div className="my-6" role="timer" aria-label={`${remaining} seconds left`}>
+          <ProgressRing value={remaining} max={step.seconds} size={220} stroke={14} color={ORANGE}>
+            <span className="num text-7xl font-black">{formatClock(remaining)}</span>
           </ProgressRing>
         </div>
         {steps[index + 1] && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Then: <span className="text-zinc-300">{steps[index + 1].name}</span>
           </p>
         )}
       </div>
 
       <div className="pb-safe grid grid-cols-2 gap-3">
-        <button type="button" onClick={skipWarmup} className="rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-400">
+        <button
+          type="button"
+          onClick={skipWarmup}
+          className="press min-h-14 rounded-2xl bg-surface font-semibold text-zinc-300 ring-1 ring-line"
+        >
           Skip warm-up
         </button>
         <button
           type="button"
           onClick={nextWarmup}
-          className="flex items-center justify-center gap-2 rounded-2xl bg-orange-400 py-4 font-bold text-zinc-950"
+          className="press flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-orange-400 font-bold text-zinc-950"
         >
-          <SkipForward className="size-5" /> Next
+          <SkipForward className="size-5" aria-hidden="true" /> Next
         </button>
       </div>
     </div>

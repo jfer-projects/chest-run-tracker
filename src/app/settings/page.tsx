@@ -1,21 +1,23 @@
 'use client';
 
-import { useRef } from 'react';
-import { Download, Upload, Volume2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ChevronDown, Cloud, CloudOff, Download, Minus, Plus, Upload, Volume2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { useHydrated } from '@/lib/hooks';
-import { countdownDone, unlockAudio } from '@/lib/cues';
-import { BottomNav, Stepper, Toggle } from '@/components/ui';
-import { CardioIcon } from '@/components/RunTimer';
-import { CloudBackup } from '@/components/CloudBackup';
+import { countdownDone, tap, unlockAudio } from '@/lib/cues';
+import { BottomNav, Segmented, Toggle } from '@/components/ui';
+import { CloudBackup, useCloudSummary } from '@/components/CloudBackup';
 import { CARDIO_LABEL } from '@/lib/run';
-import type { ExerciseId, WorkoutSessionLog } from '@/lib/types';
+import type { CardioMode, ExerciseId, WorkoutSessionLog } from '@/lib/types';
 import { EXERCISES } from '@/lib/workouts';
 
 export default function SettingsPage() {
   const hydrated = useHydrated();
   const { settings, updateSettings, history, importHistory, setSwap } = useStore();
   const fileInput = useRef<HTMLInputElement>(null);
+  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [cloudOpen, setCloudOpen] = useState(false);
+  const cloud = useCloudSummary();
 
   if (!hydrated) return <div className="min-h-dvh" />;
 
@@ -27,6 +29,7 @@ export default function SettingsPage() {
     a.download = `chest-run-history-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    setNote({ ok: true, text: `Exported ${history.length} sessions.` });
   };
 
   const onImport = async (file: File) => {
@@ -34,105 +37,101 @@ export default function SettingsPage() {
       const data = JSON.parse(await file.text()) as WorkoutSessionLog[];
       if (!Array.isArray(data) || data.some((d) => !d.id || !d.date || !d.workoutType)) throw new Error('bad file');
       importHistory(data);
-      alert(`Imported ${data.length} sessions.`);
+      setNote({ ok: true, text: `Imported ${data.length} sessions.` });
     } catch {
-      alert('That file is not a valid history export.');
+      setNote({ ok: false, text: 'That file is not a valid history export.' });
     }
   };
 
+  const swaps = Object.entries(settings.swaps) as [ExerciseId, ExerciseId][];
+
   return (
-    <main className="space-y-6 px-4 pt-safe pb-28">
-      <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+    <main className="animate-rise space-y-5 px-4 pt-safe pb-28">
+      <h1 className="text-2xl font-black tracking-tight">Settings</h1>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cloud backup</h2>
-        <CloudBackup />
-      </section>
+      <Group title="Cloud backup">
+        <button
+          type="button"
+          onClick={() => setCloudOpen((o) => !o)}
+          aria-expanded={cloudOpen}
+          className="press flex min-h-16 w-full items-center gap-3 px-4 py-2 text-left"
+        >
+          <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${cloud.ok ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/12 text-amber-300'}`}>
+            {cloud.ok ? <Cloud className="size-5" aria-hidden="true" /> : <CloudOff className="size-5" aria-hidden="true" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-medium">{cloud.title}</span>
+            <span className="block text-sm text-muted">{cloud.hint}</span>
+          </span>
+          <ChevronDown className={`size-5 shrink-0 text-muted transition-transform ${cloudOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+        </button>
+        {cloudOpen && <CloudBackup />}
+      </Group>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Program</h2>
+      <Group title="Training">
         <Row label="Guided warm-up" hint="About 3 minutes before the first set">
           <Toggle label="Guided warm-up" checked={settings.warmupEnabled} onChange={(v) => updateSettings({ warmupEnabled: v })} />
         </Row>
-        <Stepper
-          label="Suggest a deload every (weeks)"
+        <StepperRow
+          label="Weekly goal"
+          hint="Chest sessions a week"
+          value={settings.weeklyTarget}
+          onChange={(v) => updateSettings({ weeklyTarget: Math.min(7, Math.max(1, Math.round(v))) })}
+          min={1}
+          max={7}
+        />
+        <StepperRow
+          label="Deload every"
+          hint="Weeks of hard training"
           value={settings.deloadEveryWeeks}
           onChange={(v) => updateSettings({ deloadEveryWeeks: Math.min(12, Math.max(4, Math.round(v))) })}
           min={4}
+          max={12}
+          unit="wk"
         />
-        {Object.entries(settings.swaps).length > 0 && (
-          <div className="space-y-2 rounded-2xl bg-zinc-900 p-4">
-            <div className="text-sm font-medium">Active swaps</div>
-            {Object.entries(settings.swaps).map(([from, to]) => (
-              <div key={from} className="flex items-center gap-2 text-sm">
-                <span className="min-w-0 flex-1 text-zinc-400">
-                  {EXERCISES[from as ExerciseId].name} → <span className="text-zinc-100">{EXERCISES[to as ExerciseId].name}</span>
-                </span>
-                <button type="button" onClick={() => setSwap(from as ExerciseId, null)} className="text-xs text-emerald-400">
-                  Undo
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+        <Block label="Cardio after strength" hint="Offered first. You can still pick the other each session.">
+          <Segmented
+            label="Default cardio"
+            value={settings.defaultCardio}
+            onChange={(v: CardioMode) => updateSettings({ defaultCardio: v })}
+            options={(['run', 'bike'] as const).map((m) => ({ id: m, label: CARDIO_LABEL[m].title }))}
+          />
+        </Block>
+      </Group>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Rest timer</h2>
-        <Stepper
-          label="Switch between superset exercises"
+      <Group title="Rest">
+        <StepperRow
+          label="Switch within a pair"
+          hint="Within a superset"
           value={settings.transitionSeconds}
-          onChange={(v) => updateSettings({ transitionSeconds: Math.min(60, v) })}
+          onChange={(v) => updateSettings({ transitionSeconds: Math.min(60, Math.max(0, v)) })}
           step={5}
           min={0}
+          max={60}
           unit="s"
         />
-        <Row label="Routine rest after each pair" hint="60s on superset 1, 45s on superset 2">
-          <Toggle
-            label="Routine rest"
-            checked={settings.useRoutineRest}
-            onChange={(v) => updateSettings({ useRoutineRest: v })}
-          />
+        <Row label="Routine rest after each pair" hint="60s on superset 1, 45s on the rest">
+          <Toggle label="Routine rest" checked={settings.useRoutineRest} onChange={(v) => updateSettings({ useRoutineRest: v })} />
         </Row>
         {!settings.useRoutineRest && (
-          <>
-            <div className="grid grid-cols-3 gap-2">
-              {[45, 60, 90].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => updateSettings({ restSeconds: s })}
-                  className={`rounded-2xl py-4 text-lg font-bold ${
-                    settings.restSeconds === s ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-300'
-                  }`}
-                >
-                  {s}s
-                </button>
-              ))}
-            </div>
-            <Stepper
-              label="Custom rest after each pair"
-              value={settings.restSeconds}
-              onChange={(v) => updateSettings({ restSeconds: Math.max(10, v) })}
-              step={5}
-              min={10}
-              unit="s"
-            />
-          </>
+          <StepperRow
+            label="Rest after each pair"
+            value={settings.restSeconds}
+            onChange={(v) => updateSettings({ restSeconds: Math.min(300, Math.max(10, v)) })}
+            step={5}
+            min={10}
+            max={300}
+            unit="s"
+          />
         )}
-      </section>
+      </Group>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cues</h2>
+      <Group title="Alerts">
         <Row label="Sound" hint="Beeps at 3, 2, 1 and 0">
           <Toggle label="Sound" checked={settings.soundEnabled} onChange={(v) => updateSettings({ soundEnabled: v })} />
         </Row>
         <Row label="Vibration" hint="Not supported on iPhone Safari">
-          <Toggle
-            label="Vibration"
-            checked={settings.vibrationEnabled}
-            onChange={(v) => updateSettings({ vibrationEnabled: v })}
-          />
+          <Toggle label="Vibration" checked={settings.vibrationEnabled} onChange={(v) => updateSettings({ vibrationEnabled: v })} />
         </Row>
         <button
           type="button"
@@ -140,63 +139,49 @@ export default function SettingsPage() {
             unlockAudio();
             countdownDone();
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-300"
+          className="press flex min-h-14 w-full items-center justify-center gap-2 font-semibold text-emerald-400"
         >
-          <Volume2 className="size-5" /> Test cue
+          <Volume2 className="size-5" aria-hidden="true" /> Test sound and vibration
         </button>
-      </section>
+      </Group>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Cardio</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {(['run', 'bike'] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => updateSettings({ defaultCardio: m })}
-              className={`flex items-center justify-center gap-2 rounded-2xl py-4 font-bold ${
-                settings.defaultCardio === m ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-300'
-              }`}
-            >
-              <CardioIcon mode={m} className="size-5" /> {CARDIO_LABEL[m].title}
-            </button>
+      {swaps.length > 0 && (
+        <Group title="Exercise swaps">
+          {swaps.map(([from, to]) => (
+            <div key={from} className="flex min-h-14 items-center gap-3 px-4 py-2 text-sm">
+              <span className="min-w-0 flex-1 text-zinc-300">
+                {EXERCISES[from].name} <span className="text-muted">→</span> <span className="font-semibold text-zinc-100">{EXERCISES[to].name}</span>
+              </span>
+              <button type="button" onClick={() => setSwap(from, null)} className="press min-h-11 px-2 font-semibold text-emerald-400">
+                Undo
+              </button>
+            </div>
           ))}
-        </div>
-        <p className="text-xs text-zinc-500">Offered first after strength. You can still pick the other one each session.</p>
-      </section>
+        </Group>
+      )}
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Goal</h2>
-        <Stepper
-          label="Sessions per week"
-          value={settings.weeklyTarget}
-          onChange={(v) => updateSettings({ weeklyTarget: Math.max(1, Math.round(v)) })}
-          min={1}
-        />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Data</h2>
-        <p className="text-sm text-zinc-500">
-          {history.length} sessions on this device. Cloud backup above keeps them safe; a JSON export is an extra copy you
-          keep yourself.
+      <Group title="Your data">
+        <p className="px-4 py-3 text-sm text-zinc-300">
+          {history.length} {history.length === 1 ? 'session' : 'sessions'} on this device. Cloud backup keeps them safe; an export
+          is an extra copy you keep yourself.
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={exportData}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-300"
-          >
-            <Download className="size-5" /> Export
+        <div className="grid grid-cols-2">
+          <button type="button" onClick={exportData} className="press flex min-h-14 items-center justify-center gap-2 font-semibold text-zinc-100">
+            <Download className="size-5" aria-hidden="true" /> Export
           </button>
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 font-medium text-zinc-300"
+            className="press flex min-h-14 items-center justify-center gap-2 border-l border-line font-semibold text-zinc-100"
           >
-            <Upload className="size-5" /> Import
+            <Upload className="size-5" aria-hidden="true" /> Import
           </button>
         </div>
+        {note && (
+          <p role="status" className={`px-4 py-3 text-sm ${note.ok ? 'text-emerald-300' : 'text-rose-400'}`}>
+            {note.text}
+          </p>
+        )}
         <input
           ref={fileInput}
           type="file"
@@ -208,21 +193,100 @@ export default function SettingsPage() {
             e.target.value = '';
           }}
         />
-      </section>
+      </Group>
 
       <BottomNav />
     </main>
   );
 }
 
-function Row({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+/** Related rows in one card, like a phone's settings list. */
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-zinc-900 p-4">
-      <div>
-        <div className="font-medium">{label}</div>
-        <div className="text-xs text-zinc-500">{hint}</div>
+    <section>
+      <h2 className="mb-2 px-1 text-xs font-semibold tracking-wider text-muted uppercase">{title}</h2>
+      <div className="divide-y divide-line overflow-hidden rounded-2xl bg-surface ring-1 ring-line">{children}</div>
+    </section>
+  );
+}
+
+function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-2">
+      <div className="min-w-0">
+        <p className="font-medium">{label}</p>
+        {hint && <p className="text-sm text-muted">{hint}</p>}
       </div>
       {children}
     </div>
+  );
+}
+
+/** A row whose control needs the full width underneath the label. */
+function Block({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2.5 px-4 py-3">
+      <div>
+        <p className="font-medium">{label}</p>
+        {hint && <p className="text-sm text-muted">{hint}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function StepperRow({
+  label,
+  hint,
+  value,
+  onChange,
+  step = 1,
+  min,
+  max,
+  unit,
+}: {
+  label: string;
+  hint?: string;
+  value: number;
+  onChange: (v: number) => void;
+  step?: number;
+  min: number;
+  max: number;
+  unit?: string;
+}) {
+  const btn = 'press flex size-11 items-center justify-center rounded-xl bg-raised text-zinc-100 ring-1 ring-line disabled:opacity-30';
+  return (
+    <Row label={label} hint={hint}>
+      <div className="flex shrink-0 items-center gap-1.5">
+        <button
+          type="button"
+          aria-label={`Decrease ${label}`}
+          disabled={value <= min}
+          onClick={() => {
+            tap();
+            onChange(value - step);
+          }}
+          className={btn}
+        >
+          <Minus className="size-4" />
+        </button>
+        <span className="num w-12 text-center text-lg font-black">
+          {value}
+          {unit && <span className="ml-0.5 text-xs font-medium text-muted">{unit}</span>}
+        </span>
+        <button
+          type="button"
+          aria-label={`Increase ${label}`}
+          disabled={value >= max}
+          onClick={() => {
+            tap();
+            onChange(value + step);
+          }}
+          className={btn}
+        >
+          <Plus className="size-4" />
+        </button>
+      </div>
+    </Row>
   );
 }

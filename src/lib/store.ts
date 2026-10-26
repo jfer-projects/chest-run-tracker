@@ -52,6 +52,8 @@ interface StoreState {
   nextWarmup: () => void;
   skipWarmup: () => void;
   completeSet: (reps: number, weightLbs?: number, effort?: Effort) => void;
+  /** Sets how a logged set felt (done from the rest screen). */
+  rateSet: (exerciseId: ExerciseId, round: number, effort: Effort) => void;
   previousStep: () => void;
   addRest: (seconds: number) => void;
   endRest: () => void;
@@ -195,6 +197,15 @@ export const useStore = create<StoreState>()(
             restKind: midPair ? 'transition' : 'rest',
           },
         });
+      },
+
+      rateSet: (exerciseId, round, effort) => {
+        const { active } = get();
+        const log = active?.sets[exerciseId]?.[round - 1];
+        if (!active || !log) return;
+        const logs = [...(active.sets[exerciseId] ?? [])];
+        logs[round - 1] = { ...log, effort };
+        set({ active: { ...active, sets: { ...active.sets, [exerciseId]: logs } } });
       },
 
       previousStep: () => {

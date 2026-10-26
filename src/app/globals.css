@@ -1,22 +1,79 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens
+ * Surfaces step up in lightness: page < surface (cards) < raised (inputs, chips) < line (borders).
+ * `muted` is the lowest-emphasis text that is still readable: 6.2:1 on the page, 5.4:1 on raised surfaces (WCAG AA is 4.5).
+ * Anything dimmer than that is decoration only.
+ */
+@theme {
+  --color-page: #09090b;
+  --color-surface: #111114;
+  --color-raised: #1b1b1f;
+  --color-line: #27272c;
+  --color-muted: #8f8f99;
+
+  --animate-rise: rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-sheet: sheet 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-fade: fade 200ms ease-out both;
+  --animate-pop: pop 380ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes sheet {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: none;
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
 :root {
   color-scheme: dark;
 }
 
 html,
 body {
-  background: #09090b;
+  background: var(--color-page);
   color: #f4f4f5;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
 
 body {
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Hide number spinners; the app uses its own +/- steppers. */
+/* Hide number spinners; the app has its own +/- steppers. */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -42,8 +99,38 @@ input[type="number"] {
   padding-top: calc(1.5rem + var(--sat));
 }
 .pt-safe-sm {
-  padding-top: calc(1rem + var(--sat));
+  padding-top: calc(0.75rem + var(--sat));
 }
 .pt-safe-lg {
   padding-top: calc(2.5rem + var(--sat));
+}
+
+/* Press feedback for anything tappable. */
+.press {
+  transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* Visible keyboard / switch-access focus. */
+:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 2px;
+}
+
+/* Keeps timers from jittering as digits change. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
 }
