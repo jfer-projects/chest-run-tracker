@@ -107,6 +107,8 @@ export interface Settings {
   /** When true, rest follows each exercise's defaultRest (60s superset 1, 45s superset 2). */
   useRoutineRest: boolean;
   restSeconds: number;
+  /** Quick switch between the two exercises of a superset pair. 0 = go straight to the next one. */
+  transitionSeconds: number;
   soundEnabled: boolean;
   vibrationEnabled: boolean;
   weeklyTarget: number;

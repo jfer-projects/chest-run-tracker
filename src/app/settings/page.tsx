@@ -50,7 +50,15 @@ export default function SettingsPage() {
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">Rest timer</h2>
-        <Row label="Routine rest" hint="60s on superset 1, 45s on superset 2">
+        <Stepper
+          label="Switch between superset exercises"
+          value={settings.transitionSeconds}
+          onChange={(v) => updateSettings({ transitionSeconds: Math.min(60, v) })}
+          step={5}
+          min={0}
+          unit="s"
+        />
+        <Row label="Routine rest after each pair" hint="60s on superset 1, 45s on superset 2">
           <Toggle
             label="Routine rest"
             checked={settings.useRoutineRest}
@@ -74,7 +82,7 @@ export default function SettingsPage() {
               ))}
             </div>
             <Stepper
-              label="Custom rest"
+              label="Custom rest after each pair"
               value={settings.restSeconds}
               onChange={(v) => updateSettings({ restSeconds: Math.max(10, v) })}
               step={5}

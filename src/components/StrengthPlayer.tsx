@@ -140,7 +140,9 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
         </button>
       </div>
 
-      {session.restEndsAt && <RestOverlay endsAt={session.restEndsAt} nextName={exercise.name} />}
+      {session.restEndsAt && (
+        <RestOverlay endsAt={session.restEndsAt} nextName={exercise.name} transition={session.restKind === 'transition'} />
+      )}
     </div>
   );
 }
@@ -265,7 +267,7 @@ function DemoFrames({
   );
 }
 
-function RestOverlay({ endsAt, nextName }: { endsAt: number; nextName: string }) {
+function RestOverlay({ endsAt, nextName, transition }: { endsAt: number; nextName: string; transition: boolean }) {
   const { addRest, endRest } = useStore();
   const now = useNow(true, 100);
   const remaining = Math.max(0, Math.ceil((endsAt - now) / 1000));
@@ -287,9 +289,11 @@ function RestOverlay({ endsAt, nextName }: { endsAt: number; nextName: string })
   return (
     <div className="fixed inset-0 z-30 flex items-end justify-center bg-zinc-950/80 backdrop-blur-sm">
       <div className="pb-safe w-full max-w-md rounded-t-3xl border-t border-zinc-800 bg-zinc-900 px-5 pt-6">
-        <div className="text-center text-sm font-semibold tracking-wider text-sky-400 uppercase">Rest</div>
+        <div className={`text-center text-sm font-semibold tracking-wider uppercase ${transition ? 'text-emerald-400' : 'text-sky-400'}`}>
+          {transition ? 'Switch: superset partner next' : 'Rest'}
+        </div>
         <div className="my-4 flex justify-center">
-          <ProgressRing value={remaining} max={total.current} size={220} stroke={14} color={remaining <= 3 ? '#f59e0b' : '#38bdf8'}>
+          <ProgressRing value={remaining} max={total.current} size={220} stroke={14} color={remaining <= 3 ? '#f59e0b' : transition ? '#10b981' : '#38bdf8'}>
             <span className={`text-7xl font-black tabular-nums ${remaining <= 3 ? 'text-amber-400' : 'text-white'}`}>
               {formatClock(remaining)}
             </span>

@@ -26,6 +26,8 @@ export interface ActiveSession {
   stepIndex: number;
   sets: Partial<Record<ExerciseId, SetLog[]>>;
   restEndsAt: number | null;
+  /** 'transition' is the quick switch between the two exercises of a superset pair. */
+  restKind?: 'transition' | 'rest';
   run: RunState;
 }
 
@@ -74,7 +76,7 @@ export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       history: [],
-      settings: { useRoutineRest: true, restSeconds: 60, soundEnabled: true, vibrationEnabled: true, weeklyTarget: 3, defaultCardio: 'run' },
+      settings: { useRoutineRest: true, restSeconds: 60, transitionSeconds: 15, soundEnabled: true, vibrationEnabled: true, weeklyTarget: 3, defaultCardio: 'run' },
       lastWeights: {},
       lastReps: {},
       active: null,
@@ -110,7 +112,14 @@ export const useStore = create<StoreState>()(
           completed: true,
         };
         const isLast = active.stepIndex >= steps.length - 1;
-        const rest = settings.useRoutineRest ? exercise.defaultRest : settings.restSeconds;
+        // Within a superset pair, only a quick switch; the full rest comes after the pair.
+        const next = steps[active.stepIndex + 1];
+        const midPair = !!next && next.blockIndex === step.blockIndex && next.round === step.round;
+        const rest = midPair
+          ? settings.transitionSeconds
+          : settings.useRoutineRest
+            ? exercise.defaultRest
+            : settings.restSeconds;
         set({
           lastWeights: exercise.weighted && weightLbs !== undefined
             ? { ...lastWeights, [step.exerciseId]: weightLbs }
@@ -122,6 +131,7 @@ export const useStore = create<StoreState>()(
             stepIndex: isLast ? active.stepIndex : active.stepIndex + 1,
             phase: isLast ? 'run-offer' : 'strength',
             restEndsAt: isLast || rest <= 0 ? null : Date.now() + rest * 1000,
+            restKind: midPair ? 'transition' : 'rest',
           },
         });
       },
