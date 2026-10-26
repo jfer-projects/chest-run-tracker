@@ -66,6 +66,11 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
             Target: <span className="font-semibold text-white">{exercise.targetReps}</span>
             {exercise.unit === 'reps' && exercise.targetReps !== 'To failure' ? ' reps' : ''}
           </p>
+          {exercise.setup && (
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-sm font-medium text-amber-300">
+              <Wrench className="size-4" /> Setup: {exercise.setup}
+            </p>
+          )}
         </div>
 
         <DemoFrames key={exercise.id} frames={exercise.media.frames} badge={exercise.media.badge} paused={!!session.restEndsAt} />
@@ -149,7 +154,7 @@ function DemoFrames({ frames, badge, paused }: { frames: [string, string]; badge
     return () => window.clearInterval(id);
   }, [paused]);
 
-  // Images are remote; if offline, just drop the demo rather than show a broken box.
+  // If a frame fails to load, drop the demo rather than show a broken box.
   if (failed) return null;
   return (
     <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-white">

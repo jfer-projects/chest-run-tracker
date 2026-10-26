@@ -12,7 +12,7 @@ export type ExerciseId =
 
 export type WorkoutType = 'A' | 'B';
 
-export type Equipment = 'Perfect Pushups' | 'Low Bar' | 'Dumbbells' | 'Bodyweight';
+export type Equipment = 'Perfect Pushups' | 'Low Bar' | 'Dumbbells' | 'Chair / Couch';
 
 export interface SetLog {
   setNumber: number;
@@ -32,6 +32,8 @@ export interface ExerciseDefinition {
   id: ExerciseId;
   name: string;
   equipment: Equipment;
+  /** Equipment setup reminder, e.g. which height to mount the doorway bar. */
+  setup?: string;
   targetMuscle: string;
   formCues: string[];
   anatomicalTip: string;

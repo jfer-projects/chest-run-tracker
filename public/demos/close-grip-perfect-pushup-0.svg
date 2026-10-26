@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360">
+<rect width="800" height="360" fill="#fafafa"/>
+<line x1="20" y1="332" x2="780" y2="332" stroke="#d4d4d8" stroke-width="4"/>
+<text x="24" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#52525b">Handles 6-8 in apart, elbows tucked</text>
+<path d="M130 318 L112 326" stroke="#3f3f46" stroke-width="18" stroke-linecap="round" fill="none"/>
+<path d="M130 318 L230 306" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M230 306 L330 298" stroke="#3f3f46" stroke-width="36" stroke-linecap="round" fill="none"/>
+<path d="M330 298 L500 296" stroke="#3f3f46" stroke-width="46" stroke-linecap="round" fill="none"/>
+<circle cx="557" cy="288" r="26" fill="#3f3f46"/>
+<path d="M486 330 Q520 296 554 330 Z" fill="#a1a1aa"/><rect x="513" y="290" width="14" height="16" rx="4" fill="#71717a"/>
+<path d="M500 296 L452 285" stroke="#fafafa" stroke-width="32" stroke-linecap="round" fill="none"/>
+<path d="M452 285 L520 290" stroke="#fafafa" stroke-width="28" stroke-linecap="round" fill="none"/>
+<path d="M500 296 L452 285" stroke="#3f3f46" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M452 285 L520 290" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+<circle cx="715" cy="78" r="52" fill="#ffffff" stroke="#d4d4d8" stroke-width="3"/>
+<rect x="696" y="54" width="14" height="48" rx="7" fill="#71717a" transform="rotate(0 703 78)"/>
+<rect x="720" y="54" width="14" height="48" rx="7" fill="#71717a" transform="rotate(0 727 78)"/>
+<text x="715" y="152" text-anchor="middle" font-family="system-ui, sans-serif" font-size="17" font-weight="700" fill="#71717a">NEUTRAL</text>
+</svg>

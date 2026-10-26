@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360">
+<rect width="800" height="360" fill="#fafafa"/>
+<line x1="20" y1="332" x2="780" y2="332" stroke="#d4d4d8" stroke-width="4"/>
+<text x="24" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#52525b">Top: rotate handles inward</text>
+<path d="M130 318 L112 326" stroke="#3f3f46" stroke-width="18" stroke-linecap="round" fill="none"/>
+<path d="M130 318 L228 282" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M228 282 L325 248" stroke="#3f3f46" stroke-width="36" stroke-linecap="round" fill="none"/>
+<path d="M325 248 L520 180" stroke="#3f3f46" stroke-width="46" stroke-linecap="round" fill="none"/>
+<circle cx="577" cy="166" r="26" fill="#3f3f46"/>
+<path d="M486 330 Q520 296 554 330 Z" fill="#a1a1aa"/><rect x="513" y="290" width="14" height="16" rx="4" fill="#71717a"/>
+<path d="M520 180 L520 235" stroke="#fafafa" stroke-width="32" stroke-linecap="round" fill="none"/>
+<path d="M520 235 L520 290" stroke="#fafafa" stroke-width="28" stroke-linecap="round" fill="none"/>
+<path d="M520 180 L520 235" stroke="#3f3f46" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M520 235 L520 290" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+<circle cx="715" cy="78" r="52" fill="#ffffff" stroke="#d4d4d8" stroke-width="3"/>
+<rect x="686" y="54" width="14" height="48" rx="7" fill="#10b981" transform="rotate(35 693 78)"/>
+<rect x="730" y="54" width="14" height="48" rx="7" fill="#10b981" transform="rotate(-35 737 78)"/>
+<text x="715" y="152" text-anchor="middle" font-family="system-ui, sans-serif" font-size="17" font-weight="700" fill="#047857">TURNED IN</text>
+</svg>

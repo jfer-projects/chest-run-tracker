@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360">
+<rect width="800" height="360" fill="#fafafa"/>
+<line x1="20" y1="332" x2="780" y2="332" stroke="#d4d4d8" stroke-width="4"/>
+<text x="24" y="40" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#52525b">Hinge 45°, flat back</text>
+<path d="M382 322 L412 328" stroke="#3f3f46" stroke-width="18" stroke-linecap="round" fill="none"/>
+<path d="M382 322 L398 262" stroke="#3f3f46" stroke-width="30" stroke-linecap="round" fill="none"/>
+<path d="M398 262 L362 196" stroke="#3f3f46" stroke-width="36" stroke-linecap="round" fill="none"/>
+<path d="M362 196 L462 112" stroke="#3f3f46" stroke-width="46" stroke-linecap="round" fill="none"/>
+<circle cx="500" cy="90" r="26" fill="#3f3f46"/>
+<path d="M462 112 L464 172" stroke="#fafafa" stroke-width="32" stroke-linecap="round" fill="none"/>
+<path d="M464 172 L466 230" stroke="#fafafa" stroke-width="28" stroke-linecap="round" fill="none"/>
+<path d="M462 112 L464 172" stroke="#3f3f46" stroke-width="26" stroke-linecap="round" fill="none"/>
+<path d="M464 172 L466 230" stroke="#3f3f46" stroke-width="22" stroke-linecap="round" fill="none"/>
+<circle cx="466" cy="230" r="18" fill="#10b981"/><circle cx="466" cy="230" r="6.84" fill="#065f46"/>
+</svg>

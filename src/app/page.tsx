@@ -80,7 +80,10 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <p className="mt-4 text-sm text-zinc-400">
+            <span className="text-zinc-500">Gear:</span> {template.equipment.join(' · ')}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <span className="flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-zinc-300">
               <Dumbbell className="size-3.5" /> ~25 min strength
             </span>
