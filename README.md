@@ -21,10 +21,10 @@ Open http://localhost:3000. To test on your phone, run `npm run dev -- -H 0.0.0.
 
 ## Features
 
-- **Dashboard**: next workout auto-alternates A/B, weekly progress ring (target 3/week), week streak, recent sessions, resume an in-progress session.
-- **Strength player**: exercise demo frames, target muscle, form cues, anatomy tip, reps/weight steppers, auto rest timer (routine 60s/45s or custom) with 3-2-1-0 beeps and vibration, +15s/skip.
+- **Home**: next workout auto-alternates A/B with Start right on the first screen, Mon-Sun week strip (goal 3 chest sessions/week), week streak, optional Leg Day, recent sessions, resume an in-progress session.
+- **Strength player**: demo, personal rep target that adapts to what you log, last-time card, key form cue (more behind a tap), pinned reps/weight steppers, full-screen rest with next-exercise preview and 3-2-1-0 beeps and vibration.
 - **Run timer**: Warm-up 3 min, Zone 2 14 min, Push 2 min, Cool-down 1 min, with a color-coded segmented bar, phase ring, transition alerts, pause/resume/skip.
-- **History**: 8-week bar chart, date-range and A/B filters, per-set reps and weights.
+- **History**: month calendar (tap a day), A/B/Legs filter, per-set reps and weights.
 - **Settings**: rest mode, sound/vibration, weekly target, JSON export/import.
 
 Everything is stored in `localStorage` first, so the app works offline. Signing in (Settings → Cloud backup, using a MealApp account) syncs history and settings to the MealApp Supabase project's `chestrun_sessions` / `chestrun_settings` tables, which are row-level-secured per user. Sync runs on sign-in, after each change, when the app regains focus, and when the device comes back online. Deletions sync as tombstones so they don't reappear from another device. Timers use timestamps, so they stay accurate across refreshes and background tabs, and the screen is kept awake during workouts where the browser supports it.
