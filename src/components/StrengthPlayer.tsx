@@ -195,35 +195,6 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
           )}
         </div>
 
-        <div className={`grid gap-3 ${exercise.weighted ? 'grid-cols-2' : 'grid-cols-1'}`}>
-          <Stepper
-            label={exercise.unit === 'seconds' ? 'Hold time' : 'Reps'}
-            value={reps}
-            onChange={setReps}
-            step={exercise.unit === 'seconds' ? 5 : 1}
-            unit={exercise.unit === 'seconds' ? 's' : undefined}
-          />
-          {exercise.weighted && <Stepper label="Weight" value={weight} onChange={setWeight} step={2.5} unit="lb" />}
-        </div>
-
-        <div>
-          <div className="mb-1.5 text-center text-xs font-semibold tracking-wider text-zinc-500 uppercase">How did it feel?</div>
-          <div className="grid grid-cols-3 gap-2">
-            {EFFORTS.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                onClick={() => setEffort(e.id)}
-                className={`rounded-xl py-3 text-sm font-semibold ${
-                  effort === e.id ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-400'
-                }`}
-              >
-                {e.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {nextStep && (
           <p className="text-center text-sm text-zinc-500">
             Next: <span className="text-zinc-300">{resolveExercise(nextStep.exerciseId, settings.swaps).name}</span>
@@ -232,6 +203,34 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
       </div>
 
       <div className="pb-safe sticky bottom-0 space-y-2 border-t border-zinc-900 bg-zinc-950 px-4 pt-3">
+        {/* What you actually did: always visible, no scrolling. */}
+        <div className={`grid gap-2 ${exercise.weighted ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <Stepper
+            compact
+            label={exercise.unit === 'seconds' ? 'Hold time' : 'Reps done'}
+            value={reps}
+            onChange={setReps}
+            step={exercise.unit === 'seconds' ? 5 : 1}
+            unit={exercise.unit === 'seconds' ? 's' : undefined}
+          />
+          {exercise.weighted && (
+            <Stepper compact label="Weight" value={weight} onChange={setWeight} step={2.5} unit="lb" />
+          )}
+        </div>
+        <div className="grid grid-cols-3 gap-2" role="group" aria-label="How did it feel?">
+          {EFFORTS.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => setEffort(e.id)}
+              className={`rounded-xl py-2 text-sm font-semibold ${
+                effort === e.id ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-900 text-zinc-400'
+              }`}
+            >
+              {e.label}
+            </button>
+          ))}
+        </div>
         <div className="flex gap-2">
           <button
             type="button"
@@ -245,7 +244,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
           <button
             type="button"
             onClick={() => completeSet(reps, exercise.weighted ? weight : undefined, effort)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-5 text-xl font-bold text-zinc-950 active:scale-[0.98] active:bg-emerald-400"
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-xl font-bold text-zinc-950 active:scale-[0.98] active:bg-emerald-400"
           >
             <Check className="size-7" strokeWidth={3} />
             {nextStep ? 'Complete Set' : 'Finish Strength'}

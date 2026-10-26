@@ -83,6 +83,7 @@ export function Stepper({
   step = 1,
   min = 0,
   unit,
+  compact = false,
 }: {
   label: string;
   value: number;
@@ -90,19 +91,25 @@ export function Stepper({
   step?: number;
   min?: number;
   unit?: string;
+  /** Smaller buttons and number, for the pinned logging bar. */
+  compact?: boolean;
 }) {
   const set = (v: number) => onChange(Math.max(min, Math.round(v * 10) / 10));
   return (
-    <div className="rounded-2xl bg-zinc-900 p-3">
-      <div className="mb-2 text-center text-xs font-semibold tracking-wider text-zinc-400 uppercase">{label}</div>
+    <div className={`rounded-2xl bg-zinc-900 ${compact ? 'p-2' : 'p-3'}`}>
+      <div
+        className={`text-center text-xs font-semibold tracking-wider text-zinc-400 uppercase ${compact ? 'mb-1' : 'mb-2'}`}
+      >
+        {label}
+      </div>
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
           aria-label={`Decrease ${label}`}
           onClick={() => set(value - step)}
-          className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-zinc-800 text-zinc-100 active:scale-95 active:bg-zinc-700"
+          className={`flex shrink-0 items-center justify-center rounded-xl bg-zinc-800 text-zinc-100 active:scale-95 active:bg-zinc-700 ${compact ? 'size-11' : 'size-14'}`}
         >
-          <Minus className="size-7" />
+          <Minus className={compact ? 'size-5' : 'size-7'} />
         </button>
         <div className="flex min-w-0 items-baseline justify-center">
           <input
@@ -111,7 +118,7 @@ export function Stepper({
             value={value}
             onChange={(e) => set(Number(e.target.value) || 0)}
             onFocus={(e) => e.target.select()}
-            className="w-16 bg-transparent text-center text-4xl font-bold text-white outline-none"
+            className={`bg-transparent text-center font-bold text-white outline-none ${compact ? 'w-14 text-3xl' : 'w-16 text-4xl'}`}
           />
           {unit && <span className="text-sm text-zinc-500">{unit}</span>}
         </div>
@@ -119,9 +126,9 @@ export function Stepper({
           type="button"
           aria-label={`Increase ${label}`}
           onClick={() => set(value + step)}
-          className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-zinc-800 text-zinc-100 active:scale-95 active:bg-zinc-700"
+          className={`flex shrink-0 items-center justify-center rounded-xl bg-zinc-800 text-zinc-100 active:scale-95 active:bg-zinc-700 ${compact ? 'size-11' : 'size-14'}`}
         >
-          <Plus className="size-7" />
+          <Plus className={compact ? 'size-5' : 'size-7'} />
         </button>
       </div>
     </div>
