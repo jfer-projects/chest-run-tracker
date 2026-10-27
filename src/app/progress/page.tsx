@@ -28,14 +28,16 @@ export default function ProgressPage() {
   const hydrated = useHydrated();
   if (!hydrated) return <div className="min-h-dvh" />;
   return (
+    <>
     <main className="animate-rise space-y-4 px-4 pt-safe pb-28">
       <h1 className="text-2xl font-black tracking-tight">Progress</h1>
       <ExerciseProgress />
       <BodyTracking />
       <Photos />
       <CoachNotes />
-      <BottomNav />
     </main>
+      <BottomNav />
+    </>
   );
 }
 

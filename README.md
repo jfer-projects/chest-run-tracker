@@ -18,6 +18,9 @@ Open http://localhost:3000. To test on your phone, run `npm run dev -- -H 0.0.0.
 - Every session starts with an optional ~3 minute guided warm-up.
 - **Progression**: each set shows a personal rep target from last session that adapts to what you actually log today, plus a nudge to progress (with a per-exercise ladder of harder variations) once you hit the top of the range.
 - **Swaps** for shoulder-friendly or easier alternatives stick until you swap back; **deload weeks** (half the sets) are suggested every 7 weeks.
+- **Instructions for every exercise** (`src/lib/instructions.ts`): set up, the movement step by step, common mistakes and breathing. They open automatically the first time you meet an exercise, and are one tap away after that. Level-up ideas are listed separately.
+- **Doorway bar at its lowest setting is about waist height**, so the incline push-up uses tempo and pauses to compensate, and a chair version (lower surface, harder angle) is offered as the swap.
+- **Warm-up timer can be paused**, and during rest you can open a full preview of the next exercise without stopping the countdown.
 
 ## Features
 

@@ -40,9 +40,16 @@ const dumbbell = ([x, y], r = 22) =>
   `<circle cx="${x}" cy="${y}" r="${r}" fill="${ACCENT}"/><circle cx="${x}" cy="${y}" r="${r * 0.38}" fill="#065f46"/>`;
 
 /** Perfect Pushup handle, side view: domed base with the grip on top. */
+const HAND_Y = 278; // centre of the handle grips
 const handle = (x) =>
-  `<path d="M${x - 34} ${F} Q${x} ${F - 34} ${x + 34} ${F} Z" fill="${PROP}"/>` +
-  `<rect x="${x - 7}" y="${F - 40}" width="14" height="16" rx="4" fill="#71717a"/>`;
+  `<path d="M${x - 34} ${F} Q${x} ${F - 44} ${x + 34} ${F} Z" fill="${PROP}"/>` +
+  `<rect x="${x - 5}" y="${F - 52}" width="10" height="34" rx="3" fill="#71717a"/>` +
+  `<rect x="${x - 11}" y="${F - 58}" width="22" height="12" rx="6" fill="#52525b"/>`;
+
+/** Dashed line at grip height: the reference that shows how deep a push-up goes. */
+const gripLine = (text) =>
+  `<line x1="360" y1="${HAND_Y}" x2="690" y2="${HAND_Y}" stroke="${CUE}" stroke-width="2" stroke-dasharray="7 6"/>` +
+  `<text x="690" y="${HAND_Y - 8}" text-anchor="end" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="${CUE}">${text}</text>`;
 
 /** Top-down inset showing handle orientation: neutral (parallel) or rotated inward. */
 function rotationInset(rotated, spread = 22) {
@@ -102,16 +109,22 @@ ${content.join('\n')}
 
 // ---- Poses ----
 
-const pushupBottom = {
-  toe: [112, 326], ankle: [130, 318], knee: [230, 306], hip: [330, 298],
-  shoulder: [505, 300], head: [562, 292], elbow: [462, 250], hand: [520, 290],
+// Deficit: the chest sinks well below the grips, nearly to the floor.
+const deficitBottom = {
+  toe: [112, 326], ankle: [130, 318], knee: [230, 314], hip: [330, 309],
+  shoulder: [505, 304], head: [562, 298], elbow: [456, 262], hand: [520, HAND_Y],
+};
+// Standard: the chest stops level with the grips.
+const standardBottom = {
+  toe: [112, 326], ankle: [130, 318], knee: [230, 308], hip: [330, 299],
+  shoulder: [505, 282], head: [562, 274], elbow: [460, 252], hand: [520, HAND_Y],
 };
 const pushupTop = {
-  toe: [112, 326], ankle: [130, 318], knee: [228, 282], hip: [325, 248],
-  shoulder: [520, 180], head: [577, 166], elbow: [520, 235], hand: [520, 290],
+  toe: [112, 326], ankle: [130, 318], knee: [228, 280], hip: [325, 243],
+  shoulder: [520, 168], head: [577, 154], elbow: [520, 223], hand: [520, HAND_Y],
 };
 // Close grip: elbows stay tucked back along the ribs.
-const closeBottom = { ...pushupBottom, shoulder: [500, 296], head: [557, 288], elbow: [452, 285] };
+const closeBottom = { ...standardBottom, shoulder: [500, 284], head: [557, 276], elbow: [446, 292] };
 
 const rowHang = {
   toe: [150, 312], ankle: [130, 322], knee: [230, 300], hip: [330, 280],
@@ -122,14 +135,25 @@ const rowApex = {
   shoulder: [505, 200], head: [558, 186], elbow: [450, 222], hand: [520, 180],
 };
 
-const BAR_LOW = [540, 240]; // thigh height
+// The doorway bar's lowest setting is about waist height, so the incline is steep.
+const BAR_WAIST = [540, 186];
 const inclineTop = {
-  toe: [112, 326], ankle: [130, 318], knee: [233, 274], hip: [335, 228],
-  shoulder: [522, 152], head: [575, 134], elbow: [532, 196], hand: [540, 236],
+  toe: [112, 326], ankle: [130, 318], knee: [233, 261], hip: [335, 204],
+  shoulder: [522, 100], head: [575, 82], elbow: [531, 143], hand: [540, 186],
 };
 const inclineBottom = {
-  toe: [112, 326], ankle: [130, 318], knee: [228, 286], hip: [322, 256],
-  shoulder: [505, 222], head: [557, 206], elbow: [458, 192], hand: [540, 236],
+  toe: [112, 326], ankle: [130, 318], knee: [228, 280], hip: [322, 243],
+  shoulder: [505, 172], head: [557, 154], elbow: [458, 140], hand: [540, 186],
+};
+// Chair seat is lower, so the incline is shallower and harder.
+const CHAIR_X = 500;
+const chairTop = {
+  toe: [112, 326], ankle: [130, 318], knee: [230, 273], hip: [322, 232],
+  shoulder: [508, 148], head: [561, 130], elbow: [510, 196], hand: [508, 244],
+};
+const chairBottom = {
+  toe: [112, 326], ankle: [130, 318], knee: [230, 288], hip: [322, 260],
+  shoulder: [492, 208], head: [545, 190], elbow: [455, 226], hand: [508, 244],
 };
 
 const standing = { toe: [432, 328], ankle: [402, 322], knee: [404, 252], hip: [406, 182], shoulder: [410, 84], head: [414, 46] };
@@ -164,7 +188,6 @@ const flyOpen = { ...flat, elbow: [548, 262], hand: [528, 306] };
 const flyTop = { ...flat, elbow: [572, 220], hand: [572, 138] };
 const squeezeBottom = { ...bridge, elbow: [540, 300], hand: [578, 246] };
 
-const pushupLevel = { ...pushupBottom, shoulder: [505, 282], head: [562, 274], hip: [330, 290], knee: [230, 302] };
 
 // Chin-up: bar overhead, seen end-on.
 const BAR_HIGH = [420, 70];
@@ -254,24 +277,28 @@ function flyInset(open) {
 
 const scenes = {
   'perfect-pushup-deficit': [
-    svg('Bottom: chest below handles', scene(pushupBottom, handle(520)), rotationInset(false)),
+    svg('Bottom: chest 2 in. BELOW the grips', scene(deficitBottom, handle(520)), gripLine('GRIP HEIGHT'), arrow([630, HAND_Y + 4], [630, 314], '2 IN. DEEPER', [712, 306]), rotationInset(false)),
     svg('Top: rotate handles inward', scene(pushupTop, handle(520)), rotationInset(true)),
   ],
   'perfect-pushup-iso-hold': [
-    svg('Hold 5s: deep stretch', scene(pushupBottom, handle(520)), rotationInset(false)),
+    svg('Hold 5s: deep stretch below the grips', scene(deficitBottom, handle(520)), gripLine('GRIP HEIGHT'), rotationInset(false)),
     svg('Hold 5s: lockout squeeze', scene(pushupTop, handle(520)), rotationInset(true)),
   ],
   'close-grip-perfect-pushup': [
-    svg('Handles 6-8 in apart, elbows tucked', scene(closeBottom, handle(520)), rotationInset(false, 12)),
-    svg('Lockout: twist handles inward', scene(pushupTop, handle(520)), rotationInset(true, 12)),
+    svg('Handles 6-8 in apart, elbows tucked', scene(closeBottom, handle(520)), rotationInset(false, 9)),
+    svg('Lockout: twist handles inward', scene(pushupTop, handle(520)), rotationInset(true, 9)),
   ],
   'low-bar-inverted-row': [
     svg('Hang under waist-high bar', doorBar([520, 180]), scene(rowHang), barEnd([520, 180])),
     svg('Pull sternum to the bar', doorBar([520, 180]), scene(rowApex), barEnd([520, 180])),
   ],
   'incline-pushup-bar': [
-    svg('Hands on thigh-high bar', doorBar(BAR_LOW), scene(inclineTop), barEnd(BAR_LOW)),
-    svg('Lower sternum to the bar', doorBar(BAR_LOW), scene(inclineBottom), barEnd(BAR_LOW), arrow([600, 170], [556, 222], 'PRESS DOWN &amp; AWAY', [640, 158])),
+    svg('Hands on the bar (lowest setting, waist height)', doorBar(BAR_WAIST), scene(inclineTop), barEnd(BAR_WAIST)),
+    svg('Lower chest to the bar, slowly', doorBar(BAR_WAIST), scene(inclineBottom), barEnd(BAR_WAIST), arrow([640, 112], [596, 164], 'PRESS DOWN &amp; AWAY', [690, 100])),
+  ],
+  'incline-pushup-chair': [
+    svg('Hands on the seat, chair against a wall', chair(CHAIR_X, SEAT, 'right'), scene(chairTop)),
+    svg('Lower chest to the seat edge', chair(CHAIR_X, SEAT, 'right'), scene(chairBottom), arrow([640, 170], [600, 214], 'PRESS DOWN &amp; AWAY', [690, 158])),
   ],
   'db-bicep-curl': [
     svg('Elbows pinned to ribs', scene(curlDown), dumbbell(curlDown.hand, 18)),
@@ -318,12 +345,12 @@ const scenes = {
 
   // ---- Swaps ----
   'perfect-pushup-standard': [
-    svg('Chest level with the handles', scene(pushupLevel, handle(520)), rotationInset(false)),
+    svg('Bottom: chest level with the grips, no deeper', scene(standardBottom, handle(520)), gripLine('GRIP HEIGHT'), rotationInset(false)),
     svg('Press up and squeeze', scene(pushupTop, handle(520)), rotationInset(true)),
   ],
   'close-grip-burnout': [
-    svg('Close grip, reps to failure', scene(closeBottom, handle(520)), rotationInset(false, 12)),
-    svg('Squeeze at the top', scene(pushupTop, handle(520)), rotationInset(true, 12)),
+    svg('Close grip, reps to failure', scene(closeBottom, handle(520)), rotationInset(false, 9)),
+    svg('Squeeze at the top', scene(pushupTop, handle(520)), rotationInset(true, 9)),
   ],
   'chin-up-negative': [
     svg('Step up: chin over the bar', doorBar(BAR_HIGH), scene(chinTop), barEnd(BAR_HIGH)),

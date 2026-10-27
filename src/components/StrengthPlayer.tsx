@@ -8,6 +8,7 @@ import { confirmTap, tempoTick } from '@/lib/cues';
 import { formatSets, lastSetsFor, progressionAdvice, setsSummary, suggestReps } from '@/lib/stats';
 import type { ExerciseId } from '@/lib/types';
 import { ExerciseDemo } from './Demo';
+import { HowToDetails } from './HowTo';
 import { RestScreen } from './RestScreen';
 import { Stepper } from './ui';
 
@@ -25,6 +26,9 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
   const [weight, setWeight] = useState(0);
   const [showSwap, setShowSwap] = useState(false);
   const [showTips, setShowTips] = useState(false);
+
+  // Never logged this exercise before: open the full instructions by default.
+  useEffect(() => setShowTips(!last), [exercise.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const today = session.sets[exercise.id];
   const target = suggestReps(exercise, step.round, last?.sets, today, exercise.weighted ? weight : undefined);
@@ -60,10 +64,10 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
       : null;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <StepProgress steps={steps} current={session.stepIndex} blockName={block.name} round={step.round} rounds={step.rounds} />
 
-      <div key={`step-${session.stepIndex}`} className="animate-rise flex-1 space-y-3 px-4 pt-3 pb-4">
+      <div key={`step-${session.stepIndex}`} className="animate-rise min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-3 pb-4">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
             <span className="rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs font-black text-emerald-300">{label}</span>
@@ -156,28 +160,12 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
             aria-expanded={showTips}
             className="press flex min-h-11 w-full items-center justify-between border-t border-line px-3 text-sm font-semibold text-zinc-300"
           >
-            {showTips ? 'Hide form cues & tips' : 'More form cues & tips'}
+            {showTips ? 'Hide instructions' : 'How to do it, step by step'}
             <ChevronDown className={`size-4 transition-transform ${showTips ? 'rotate-180' : ''}`} aria-hidden="true" />
           </button>
           {showTips && (
-            <div className="space-y-3 border-t border-line p-3 text-sm text-zinc-300">
-              <ul className="space-y-2">
-                {exercise.formCues.slice(1).map((cue) => (
-                  <li key={cue} className="flex gap-2">
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-amber-400" aria-hidden="true" />
-                    {cue}
-                  </li>
-                ))}
-              </ul>
-              <p className="rounded-xl bg-page p-3 text-xs leading-relaxed text-muted">{exercise.anatomicalTip}</p>
-              <div>
-                <p className="mb-1 text-[11px] font-semibold tracking-wider text-muted uppercase">Ways to level up</p>
-                <ol className="list-decimal space-y-0.5 pl-5 text-zinc-300">
-                  {exercise.progressions.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
-                </ol>
-              </div>
+            <div className="animate-fade border-t border-line p-3">
+              <HowToDetails exercise={exercise} />
             </div>
           )}
         </section>
@@ -190,7 +178,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
       </div>
 
       {/* What you actually did: pinned so it is always on screen and one thumb away. */}
-      <div className="pb-safe sticky bottom-0 space-y-2 border-t border-line bg-page px-4 pt-3">
+      <div className="pb-safe shrink-0 space-y-2 border-t border-line bg-page px-4 pt-3">
         <div className={`grid gap-2 ${exercise.weighted ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <Stepper
             compact
@@ -242,6 +230,7 @@ export function StrengthPlayer({ session }: { session: ActiveSession }) {
             rounds: step.rounds,
             target,
             last: last ? formatSets(exercise, last.sets) : null,
+            afterName: steps[session.stepIndex + 1] ? resolveExercise(steps[session.stepIndex + 1].exerciseId, settings.swaps).name : null,
           }}
         />
       )}
@@ -274,7 +263,7 @@ function StepProgress({
     else groups[s.blockIndex] = { start: i, count: 1 };
   });
   return (
-    <div className="px-4 pt-1">
+    <div className="shrink-0 px-4 pt-1">
       <div className="mb-2 flex items-baseline justify-between text-xs">
         <span className="font-semibold text-zinc-200">
           {blockName} · Round {round} of {rounds}

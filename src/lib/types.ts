@@ -2,6 +2,7 @@ export type ExerciseId =
   | 'perfect-pushup-deficit'
   | 'low-bar-inverted-row'
   | 'incline-pushup-bar'
+  | 'incline-pushup-chair'
   | 'db-bicep-curl'
   | 'perfect-pushup-iso-hold'
   | 'glute-bridge-floor-press'

@@ -46,6 +46,7 @@ export default function SettingsPage() {
   const swaps = Object.entries(settings.swaps) as [ExerciseId, ExerciseId][];
 
   return (
+    <>
     <main className="animate-rise space-y-5 px-4 pt-safe pb-28">
       <h1 className="text-2xl font-black tracking-tight">Settings</h1>
 
@@ -195,8 +196,9 @@ export default function SettingsPage() {
         />
       </Group>
 
-      <BottomNav />
     </main>
+      <BottomNav />
+    </>
   );
 }
 

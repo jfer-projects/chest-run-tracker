@@ -27,6 +27,8 @@ export interface ActiveSession {
   deload?: boolean;
   warmupIndex?: number;
   warmupEndsAt?: number | null;
+  /** Milliseconds left when the warm-up timer is paused; null while it runs. */
+  warmupPausedMs?: number | null;
   stepIndex: number;
   sets: Partial<Record<ExerciseId, SetLog[]>>;
   restEndsAt: number | null;
@@ -50,6 +52,8 @@ interface StoreState {
 
   startSession: (type: WorkoutType) => void;
   nextWarmup: () => void;
+  pauseWarmup: () => void;
+  resumeWarmup: () => void;
   skipWarmup: () => void;
   completeSet: (reps: number, weightLbs?: number, effort?: Effort) => void;
   /** Sets how a logged set felt (done from the rest screen). */
@@ -149,13 +153,28 @@ export const useStore = create<StoreState>()(
           get().skipWarmup();
           return;
         }
-        set({ active: { ...active, warmupIndex: next, warmupEndsAt: Date.now() + steps[next].seconds * 1000 } });
+        // Moving on always starts the next move running, even if the last one was paused.
+        set({
+          active: { ...active, warmupIndex: next, warmupEndsAt: Date.now() + steps[next].seconds * 1000, warmupPausedMs: null },
+        });
+      },
+
+      pauseWarmup: () => {
+        const { active } = get();
+        if (!active || active.phase !== 'warmup' || active.warmupPausedMs != null || !active.warmupEndsAt) return;
+        set({ active: { ...active, warmupPausedMs: Math.max(0, active.warmupEndsAt - Date.now()) } });
+      },
+
+      resumeWarmup: () => {
+        const { active } = get();
+        if (!active || active.warmupPausedMs == null) return;
+        set({ active: { ...active, warmupEndsAt: Date.now() + active.warmupPausedMs, warmupPausedMs: null } });
       },
 
       skipWarmup: () => {
         const { active } = get();
         if (!active) return;
-        set({ active: { ...active, phase: 'strength', warmupEndsAt: null } });
+        set({ active: { ...active, phase: 'strength', warmupEndsAt: null, warmupPausedMs: null } });
       },
 
       completeSet: (reps, weightLbs, effort) => {

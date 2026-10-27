@@ -72,6 +72,7 @@ export default function Dashboard() {
   };
 
   return (
+    <>
     <main className="animate-rise space-y-4 px-4 pt-safe pb-28">
       <header className="flex items-center justify-between gap-3">
         <div>
@@ -252,8 +253,9 @@ export default function Dashboard() {
         </section>
       )}
 
-      <BottomNav />
     </main>
+      <BottomNav />
+    </>
   );
 }
 

@@ -71,6 +71,7 @@ export default function HistoryPage() {
   };
 
   return (
+    <>
     <main className="animate-rise space-y-4 px-4 pt-safe pb-28">
       <h1 className="text-2xl font-black tracking-tight">History</h1>
 
@@ -165,7 +166,8 @@ export default function HistoryPage() {
         )}
       </section>
 
-      <BottomNav />
     </main>
+      <BottomNav />
+    </>
   );
 }

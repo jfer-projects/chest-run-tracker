@@ -46,8 +46,8 @@ export function RunOffer({ session }: { session: ActiveSession }) {
     startRun(mode);
   };
   return (
-    <div className="animate-rise flex flex-1 flex-col px-4">
-      <div className="flex-1 pt-4 text-center">
+    <div className="animate-rise flex min-h-0 flex-1 flex-col px-4">
+      <div className="min-h-0 flex-1 overflow-y-auto pt-4 text-center">
         <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-emerald-500/15">
           <CheckCircle2 className="size-9 text-emerald-400" aria-hidden="true" />
         </div>
@@ -72,7 +72,7 @@ export function RunOffer({ session }: { session: ActiveSession }) {
         </div>
       </div>
 
-      <div className="pb-safe space-y-2 pt-4">
+      <div className="pb-safe shrink-0 space-y-2 pt-4">
         <button
           type="button"
           onClick={() => start(preferred)}
@@ -141,10 +141,10 @@ export function RunTimer({ session }: { session: ActiveSession }) {
 
   return (
     <div
-      className="flex flex-1 flex-col px-4 pt-2 transition-[background] duration-700"
+      className="flex min-h-0 flex-1 flex-col px-4 pt-2 transition-[background] duration-700"
       style={{ background: `radial-gradient(120% 55% at 50% 38%, ${phase.color}22, transparent 70%)` }}
     >
-      <div>
+      <div className="shrink-0">
         <PhaseBar elapsed={elapsed} tall />
         <div className="num mt-1 flex justify-between text-xs text-muted">
           <span>{formatClock(elapsed)} elapsed</span>
@@ -152,7 +152,8 @@ export function RunTimer({ session }: { session: ActiveSession }) {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center text-center">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="flex min-h-full flex-col items-center justify-center py-2 text-center">
         <span
           className="rounded-full px-4 py-1.5 text-sm font-bold tracking-wider uppercase"
           style={{ background: `${phase.color}26`, color: phase.color }}
@@ -177,7 +178,9 @@ export function RunTimer({ session }: { session: ActiveSession }) {
         )}
       </div>
 
-      <div className="pb-safe grid grid-cols-[1fr_1.6fr_1fr] gap-3">
+      </div>
+
+      <div className="pb-safe grid shrink-0 grid-cols-[1fr_1.6fr_1fr] gap-3 pt-2">
         <button
           type="button"
           onClick={() => setConfirmEnd(true)}

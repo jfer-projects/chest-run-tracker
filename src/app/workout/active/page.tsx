@@ -89,8 +89,8 @@ export default function ActiveWorkoutPage() {
   };
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      <header className="pt-safe-sm sticky top-0 z-10 bg-page px-4 pb-2">
+    <main className="flex h-dvh flex-col overflow-hidden">
+      <header className="pt-safe-sm z-10 shrink-0 bg-page px-4 pb-2">
         <div className="flex min-h-11 items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <WorkoutBadge type={active.workoutType} size="sm" />
